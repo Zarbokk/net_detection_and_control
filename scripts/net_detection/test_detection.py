@@ -206,6 +206,11 @@ def callback(image):
 
             rotation = R.from_dcm(r[1][3])
             print(rotation.as_euler('xyz', degrees=True))
+            print("area:")
+            print(area)
+            print("distance:")
+            print(476*np.sqrt(10*10/area) )
+
             cv2.imshow('Hough_detection', frame)
             cv2.waitKey(0)
             # break
