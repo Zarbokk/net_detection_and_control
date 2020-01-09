@@ -1,18 +1,38 @@
 import rospy
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import PoseStamped
+from pyquaternion import Quaternion
+import numpy as np
+
+global depth, distance_to_net, roll, pitch
+
 
 def callback_imu(msg):
-    #msg=Imu()
-    print(msg.orientation.x)
+    # msg=Imu()
+
+
+    tmpquat = Quaternion(w=msg.orientation.w,
+                         x=msg.orientation.x,
+                         y=msg.orientation.y,
+                         z=msg.orientation.z)
+
+    print(tmpquat.inverse.yaw_pitch_roll)
+
+
+
+
 
 def callback_barometer(msg):
-    #msg=Imu()
-    print(msg.pose.position.x)
+    # msg=Imu()
+    # print(msg.pose.position.x)
+    return
+
 
 def callback_net_distance(msg):
-    #msg=Imu()
-    print(msg.pose.position.x)
+    # msg=Imu()
+    # print(msg.pose.position.x)
+    return
+
 
 def main():
     rospy.init_node('path_planning')
@@ -26,8 +46,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
