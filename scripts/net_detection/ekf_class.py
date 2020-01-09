@@ -8,12 +8,12 @@ class ExtendedKalmanFilter(object):
         self.__x_est_0 = np.array([[x0[0]]]).reshape((number_of_states, 1))
         self.__x_est = self.__x_est_0
         # standard deviations
-        self.__sig_x1 = 1.500
+        self.__sig_x1 = 10.500
 
         self.__p_mat_0 = np.array(np.diag([self.__sig_x1 ** 2]))
         self.__p_mat = self.__p_mat_0
         # process noise
-        self.__sig_w1 = 0.500
+        self.__sig_w1 = 5.500
         self.__q_mat = np.array(np.diag([self.__sig_w1 ** 2]))
 
         # measurement noise
@@ -47,8 +47,8 @@ class ExtendedKalmanFilter(object):
         return self.__p_mat
 
     # measurement function
-    def h(self, x,pos_x,pos_y):
-        z = np.array(np.diag([x]))
+    def h(self, x):
+        z = np.array(np.diag(x))
 
         return z
 
@@ -71,7 +71,7 @@ class ExtendedKalmanFilter(object):
         # iterate through all tx-rss-values
         # for itx in range(self.__tx_num):
         # estimate measurement from x_est
-        z_est = self.h(self.__x_est,0,0)
+        z_est = self.h(self.__x_est)
         y_tild = z_meas - z_est
         #print("zmeas = " + str(z_meas.transpose()))
         #print("yest = " + str(y_est.transpose()))
