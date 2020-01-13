@@ -19,9 +19,6 @@ def callback_imu(msg):
     print(tmpquat.inverse.yaw_pitch_roll)
 
 
-
-
-
 def callback_barometer(msg):
     # msg=Imu()
     # print(msg.pose.position.x)
