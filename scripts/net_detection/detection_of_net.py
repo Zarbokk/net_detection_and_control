@@ -8,8 +8,13 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import ekf_class
 from geometry_msgs.msg import Pose, PoseArray, PoseStamped
-ekf=None
-publisher_distance_net=None
+from visualization_msgs.msg import Marker, MarkerArray
+
+ekf = None
+publisher_distance_net = None
+
+publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
+
 def maxValue(regulate, max_value):
     if regulate > max_value:
         regulate = max_value
@@ -50,12 +55,11 @@ def controller_verfolgen(x, y, alpha):
     accell_in = maxValue(9 * v_wanted, 4000)
     return accell_in, steering
 
-
 def callback(image):
-    global ekf,publisher_distance_net
-    #print("Start of current picture")
-    #print(ekf.get_x_est())
-    #print(ekf.get_p_mat())
+    global ekf, publisher_distance_net,publisher_marker
+    # print("Start of current picture")
+    # print(ekf.get_x_est())
+    # print(ekf.get_p_mat())
     ekf.prediction()
     # print(image.encoding)
     brige = CvBridge()
@@ -87,7 +91,7 @@ def callback(image):
     # cv2.waitKey(1)
 
     contours, hierarchy = cv2.findContours(gray, 1, 2)
-    distances_all_squares=list()
+    distances_all_squares = list()
     for contour in contours:
         area = cv2.contourArea(contour)
 
@@ -171,7 +175,8 @@ def callback(image):
                 points = points[np.argsort(points[:, 0]), :]
                 linke_seite_rechteck = points[0:2, :]
                 links_oben = points[np.where(linke_seite_rechteck[:, 1] == np.min(linke_seite_rechteck[:, 1]))[0], :][0]
-                links_unten = points[np.where(linke_seite_rechteck[:, 1] == np.max(linke_seite_rechteck[:, 1]))[0], :][0]
+                links_unten = points[np.where(linke_seite_rechteck[:, 1] == np.max(linke_seite_rechteck[:, 1]))[0], :][
+                    0]
 
                 rechte_seite_rechteck = points[2:4, :]
                 rechts_oben = \
@@ -202,52 +207,86 @@ def callback(image):
                 # print(K)
                 # r = cv2.decomposeHomographyMat(h, K)
                 # print(np.asarray(r).shape)
-                #print("rotation:")
+                # print("rotation:")
                 # for i in range(4):
                 #     print(r[2][i])
                 #     #print(r[3][i])
                 #
                 #     rotation = R.from_dcm(r[1][i])
                 #     print(rotation.as_quat())
-                #print(r[2][i])
-                #print(r[3][i])
+                # print(r[2][i])
+                # print(r[3][i])
 
                 # rotation = R.from_dcm(r[1][3])
-                #print(rotation.as_euler('xyz', degrees=True))
+                # print(rotation.as_euler('xyz', degrees=True))
             x_pos, y_pos, w, h = cv2.boundingRect(contour)
 
-            distances_all_squares.append([476*np.sqrt(10*10/area),(float(x_pos)-400)/800,(float(y_pos)-400)/800,])
+            distances_all_squares.append(
+                [476 * np.sqrt(1 * 1 / area), (float(x_pos) - 400) / 800, (float(y_pos) - 400) / 800, ])
     cv2.imshow('Hough_detection', frame)
     cv2.waitKey(1)
-            # break
+    # break
 
     print("EKF Update:")
-    distances_all_squares=np.asarray(distances_all_squares)
+    distances_all_squares = np.asarray(distances_all_squares)
     np.random.shuffle(distances_all_squares)
     for i in distances_all_squares:
         # print(i)
-        ekf.update(i[0],i[1],i[2])
-    #print(ekf.get_z_est(0,-0.5))
-    #print(ekf.get_z_est(0,0))
-    #print(ekf.get_z_est(0,0.5))
+        ekf.update(i[0], i[1], i[2])
+    # print(ekf.get_z_est(0,-0.5))
+    # print(ekf.get_z_est(0,0))
+    # print(ekf.get_z_est(0,0.5))
     print(ekf.get_x_est())
+    a = ekf.get_x_est()[0]
+    b = ekf.get_x_est()[1]
+    c = ekf.get_x_est()[2]
     distance_to_net = PoseStamped()
     distance_to_net.header.stamp = rospy.Time.now()
     distance_to_net.header.frame_id = "boat_to_net"  # ned
-    distance_to_net.pose.position.z = ekf.get_z_est(0.5,0.5)
+    distance_to_net.pose.position.x = a
+    distance_to_net.pose.position.y = b
+    distance_to_net.pose.position.z = c
 
     publisher_distance_net.publish(distance_to_net)
 
-            # cv2.drawContours(frame, contour, -1, (0, 255, 255), 3)
-            # for i in range(points.shape[0]):
-            #     cv2.circle(frame, tuple(points[i, :]), 2, (0, 0, 255), -1)
+    rviz = True
+
+    if rviz:
+        x_real = 400.0 / 476.0 * abs(c)
+        markerArray = MarkerArray()
+        i = 1
+        for y in np.linspace(-x_real, x_real, 10):
+            for x in np.linspace(-x_real, x_real, 10):
+                r = 0.1
+                marker = Marker()
+                marker.header.frame_id = "local_boat"
+                marker.id = i
+                marker.type = marker.SPHERE
+                marker.action = marker.ADD
+                marker.scale.x = r * 2  # r*2
+                marker.scale.y = r * 2
+                marker.scale.z = r * 2
+                marker.color.r = 1
+                marker.color.g = 1
+                marker.color.a = 1  # transparency
+                marker.pose.orientation.w = 1.0
+                marker.pose.position.x = x  # x
+                marker.pose.position.y = -(-c+b/abs(x_real)*0.5*x) # y
+                marker.pose.position.z = y  # z
+                markerArray.markers.append(marker)
+                i = i + 1
+            publisher_marker.publish(markerArray)
+
+    # cv2.drawContours(frame, contour, -1, (0, 255, 255), 3)
+    # for i in range(points.shape[0]):
+    #     cv2.circle(frame, tuple(points[i, :]), 2, (0, 0, 255), -1)
 
 
 def listener():
     geschwindigkeit = 0.5
     # tracker = tracking_red_dots(308,410)
     # tracker = tracking_red_dots(960, 1280,350,900,400,960)
-    global ekf,publisher_distance_net
+    global ekf, publisher_distance_net
 
     ekf = ekf_class.ExtendedKalmanFilter()
 
