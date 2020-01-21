@@ -9,11 +9,16 @@ from scipy.spatial.transform import Rotation as R
 import ekf_class
 from geometry_msgs.msg import Pose, PoseArray, PoseStamped
 from visualization_msgs.msg import Marker, MarkerArray
+from gazebo_msgs.msg import ModelStates
+
+from pyquaternion import Quaternion
 
 ekf = None
 publisher_distance_net = None
-
+rviz = True
 publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
+publisher_net_marker = rospy.Publisher('real_net_gt', Marker, queue_size=1)
+
 
 def maxValue(regulate, max_value):
     if regulate > max_value:
@@ -55,8 +60,9 @@ def controller_verfolgen(x, y, alpha):
     accell_in = maxValue(9 * v_wanted, 4000)
     return accell_in, steering
 
+
 def callback(image):
-    global ekf, publisher_distance_net,publisher_marker
+    global ekf, publisher_distance_net, publisher_marker, rviz
     # print("Start of current picture")
     # print(ekf.get_x_est())
     # print(ekf.get_p_mat())
@@ -222,7 +228,7 @@ def callback(image):
             x_pos, y_pos, w, h = cv2.boundingRect(contour)
 
             distances_all_squares.append(
-                [476 * np.sqrt(1 * 1 / area), (float(x_pos) - 400) / 800, (float(y_pos) - 400) / 800, ])
+                [476 * np.sqrt(0.165 * 0.145 / area), (float(x_pos) - 400) / 800, (float(y_pos) - 400) / 800, ])
     cv2.imshow('Hough_detection', frame)
     cv2.waitKey(1)
     # break
@@ -230,9 +236,7 @@ def callback(image):
     print("EKF Update:")
     distances_all_squares = np.asarray(distances_all_squares)
     np.random.shuffle(distances_all_squares)
-    for i in distances_all_squares:
-        # print(i)
-        ekf.update(i[0], i[1], i[2])
+    ekf.update(distances_all_squares)
     # print(ekf.get_z_est(0,-0.5))
     # print(ekf.get_z_est(0,0))
     # print(ekf.get_z_est(0,0.5))
@@ -248,8 +252,6 @@ def callback(image):
     distance_to_net.pose.position.z = c
 
     publisher_distance_net.publish(distance_to_net)
-
-    rviz = True
 
     if rviz:
         x_real = 400.0 / 476.0 * abs(c)
@@ -271,7 +273,7 @@ def callback(image):
                 marker.color.a = 1  # transparency
                 marker.pose.orientation.w = 1.0
                 marker.pose.position.x = x  # x
-                marker.pose.position.y = -(-c+b/abs(x_real)*0.5*x) # y
+                marker.pose.position.y = -(-c + b / abs(x_real) * 0.5 * x)  # y
                 marker.pose.position.z = y  # z
                 markerArray.markers.append(marker)
                 i = i + 1
@@ -282,17 +284,46 @@ def callback(image):
     #     cv2.circle(frame, tuple(points[i, :]), 2, (0, 0, 255), -1)
 
 
+def draw_net_rviz(msg):
+    global publisher_net_marker
+    orientation_boat = Quaternion(w=msg.pose[0].orientation.w,
+                                  x=msg.pose[0].orientation.x,
+                                  y=msg.pose[0].orientation.y,
+                                  z=msg.pose[0].orientation.z)
+
+    pose_boat = np.array([msg.pose[0].position.x, msg.pose[0].position.y, msg.pose[0].position.z])
+    pose_boat = orientation_boat.inverse.rotate(-pose_boat)
+    marker = Marker()
+    marker.header.frame_id = "local_boat"
+    marker.id = 0
+    marker.type = marker.CYLINDER
+    marker.action = marker.ADD
+    marker.scale.x = 4
+    marker.scale.y = 4
+    marker.scale.z = 2
+    marker.color.r = 0
+    marker.color.g = 1
+    marker.color.a = 0.2  # transparency
+    marker.pose.orientation.w = 1.0
+    marker.pose.position.x = pose_boat[0]
+    marker.pose.position.y = pose_boat[1]
+    marker.pose.position.z = pose_boat[2]-1
+    publisher_net_marker.publish(marker)
+
+
 def listener():
     geschwindigkeit = 0.5
     # tracker = tracking_red_dots(308,410)
     # tracker = tracking_red_dots(960, 1280,350,900,400,960)
-    global ekf, publisher_distance_net
+    global ekf, publisher_distance_net, rviz
 
     ekf = ekf_class.ExtendedKalmanFilter()
 
     rospy.init_node('publisher', anonymous=True)
     publisher_distance_net = rospy.Publisher('/estimated_distance_to_net', PoseStamped, queue_size=1)
     rospy.Subscriber("/multisense_sl/camera/left/image_raw", Image, callback)
+    if rviz:
+        rospy.Subscriber("/gazebo/model_states", ModelStates, draw_net_rviz)
     rospy.spin()
     # video.release()
     cv2.destroyAllWindows()

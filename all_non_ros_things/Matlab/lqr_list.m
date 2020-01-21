@@ -11,7 +11,7 @@ for roll = linspace(0,2*pi,N)
 
 
             Q=diag([1 1 1 100 10 10 1 1 1 1000 100 100]);%states: x y z roll pitch yaw x_b y_b z_b phi theta psi
-            R=eye(6)*10;
+            R=eye(6)*1;
             lin_A=Linerize_A(operating_point,0);
             lin_B=Linerize_B(operating_point,0);
             %length(lin_A)-rank(ctrb(lin_A,lin_B))

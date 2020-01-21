@@ -6,7 +6,7 @@ from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 from mavros_msgs.msg import AttitudeTarget
 depth_des = 1.0
-distance_to_net_des = 8
+distance_to_net_des = 1.5
 depth = 0
 distance_to_net = 0
 roll_current = 0
@@ -115,9 +115,9 @@ def pathplanning():
             marker.id = i
             marker.type = marker.SPHERE
             marker.action = marker.ADD
-            marker.scale.x = r * 2  # r*2 of distance to camera from tag_14
-            marker.scale.y = r * 2
-            marker.scale.z = r * 2
+            marker.scale.x = r  # r*2 of distance to camera from tag_14
+            marker.scale.y = r
+            marker.scale.z = r
             marker.color.r = 1
             marker.color.a = 1  # transparency
             marker.pose.orientation.w = 1.0
