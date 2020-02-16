@@ -66,9 +66,10 @@ axis equal
 
 
 
-current_goal=4%goal of uboot
+current_goal=15%goal of uboot
 plot(waypoints_x(current_goal),waypoints_y(current_goal), 'ro', 'MarkerSize', 10)
 current_pos_boat=[rand*3,rand*1.5]
+%current_pos_boat=[1.5,0]
 plot(current_pos_boat(1),current_pos_boat(2), 'bo', 'MarkerSize', 10)
 
 %%
@@ -121,7 +122,7 @@ r=sqrt((x1-b(1))^2+(y1-b(2))^2)
 th = 0:pi/50:2*pi;
 xunit = r * cos(th) + b(1);
 yunit = r * sin(th) + b(2);
-plot(xunit, yunit);
+%plot(xunit, yunit);
 
 
 
