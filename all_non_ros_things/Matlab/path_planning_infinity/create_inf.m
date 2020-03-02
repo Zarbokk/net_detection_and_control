@@ -67,8 +67,11 @@ axis equal
 
 
 current_goal=randi(N)%goal of uboot
+% current_goal=10
 plot(waypoints_x(current_goal),waypoints_y(current_goal), 'ro', 'MarkerSize', 10)
 current_pos_boat=[rand*3,rand*1.5]
+%current_pos_boat=[1.5,0]
+current_pos_boat=[2.7189,0.3195]
 plot(current_pos_boat(1),current_pos_boat(2), 'bo', 'MarkerSize', 10)
 
 %%
@@ -95,13 +98,62 @@ b_cubic=(angle(current_goal)-c_cubic-3*a_cubic*x_max^2)/2/x_max
 %a_cubic=-2*b_cubic/x_max/3
 %a_cubic=(-b_cubic*x_max^2-c_cubic*x_max-d_cubic+y_max)/x_max^3
 
-test=a_cubic*x.^3+b_cubic*x.^2+c_cubic*x+d_cubic
+y=a_cubic*x.^3+b_cubic*x.^2+c_cubic*x+d_cubic
 stammfunktion=a_cubic*x_max.^3+b_cubic*x_max.^2+c_cubic*x_max+d_cubic
 ableitung=3*a_cubic*(x_max/2).^2+2*b_cubic*(x_max/2)+c_cubic
 
 x=x-x_max+waypoints_x(current_goal)
-test=test-y_max+waypoints_y(current_goal)
-plot(x,test)
+y=y-y_max+waypoints_y(current_goal)
+
+%plot(x,y)
+%%
+if x_max > 0 && y_max>0
+    x=linspace(0,x_max,100)
+    angle_rotation_matrix=-atan2(y_max,x_max)
+    R=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    angle_rotation_matrix=atan2(y_max,x_max)
+    R_return=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    tmp=R*[x_max;y_max]
+    m=tan(atan(angle(current_goal))-atan2(y_max,x_max))
+    x=linspace(0,tmp(1),100)
+end
+if x_max < 0 && y_max>0
+    angle_rotation_matrix=pi-atan2(y_max,x_max)
+    R=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    angle_rotation_matrix=atan2(y_max,x_max)-pi
+    R_return=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    m=tan(atan(angle(current_goal))-atan2(y_max,x_max))
+    tmp=R*[x_max;y_max]
+    x=linspace(tmp(1),0,100)
+end
+if x_max > 0 && y_max<0
+    angle_rotation_matrix=-atan2(y_max,x_max)
+    R=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    angle_rotation_matrix=+atan2(y_max,x_max)
+    R_return=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    m=tan(atan(angle(current_goal))-atan2(y_max,x_max))
+    tmp=R*[x_max;y_max]
+    x=linspace(0,tmp(1),100)
+end
+if x_max < 0 && y_max<0
+    angle_rotation_matrix=pi-atan2(y_max,x_max)
+    R=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    angle_rotation_matrix=atan2(y_max,x_max)-pi
+    R_return=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+    m=tan(atan(angle(current_goal))-atan2(y_max,x_max))
+    tmp=R*[x_max;y_max]
+    x=linspace(tmp(1),0,100)
+end
+
+
+a=m/tmp(1)/tmp(1)
+b=-m/tmp(1)
+y=a*x.^3+b*x.^2
+angle_rotation_matrix=angle_rotation_matrix-pi
+%R_new=[cos(angle_rotation_matrix) -sin(angle_rotation_matrix);sin(angle_rotation_matrix) cos(angle_rotation_matrix)]
+x_real=R_return(1,1:2)*[x;y]+current_pos_boat(1)
+y_real=R_return(2,1:2)*[x;y]+current_pos_boat(2)
+plot(x_real,y_real)
 %%
 second_point=current_goal-2
 if second_point<1
@@ -121,7 +173,7 @@ r=sqrt((x1-b(1))^2+(y1-b(2))^2)
 th = 0:pi/50:2*pi;
 xunit = r * cos(th) + b(1);
 yunit = r * sin(th) + b(2);
-plot(xunit, yunit);
+%plot(xunit, yunit);
 
 
 
