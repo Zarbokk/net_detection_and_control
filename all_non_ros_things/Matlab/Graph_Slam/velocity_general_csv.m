@@ -14,7 +14,7 @@ n=1
 i=1
 clear pose_boat
 x0 = [1.5 1 0];
-while i < size(tag_detections,1)-15
+while i < size(tag_detections,1)
     clear x_pos y_pos z_pos d
     id = tag_detections(i,7);
     tag_pose = calibration_tank(find(calibration_tank(:,1)==id),2:4);
@@ -23,7 +23,7 @@ while i < size(tag_detections,1)-15
     y_pos(1) = tag_pose(2);
     z_pos(1) = tag_pose(3);
     k=1;
-    while tag_detections(i+k,9) == tag_detections(i,9)
+    while tag_detections(i+k,9) == tag_detections(i,9) 
         id = tag_detections(i+k,7);
         tag_pose = calibration_tank(find(calibration_tank(:,1)==id),2:4);
         k=k+1;
@@ -31,6 +31,10 @@ while i < size(tag_detections,1)-15
         x_pos(k) = tag_pose(1);
         y_pos(k) = tag_pose(2);
         z_pos(k) = tag_pose(3);
+        
+        if k+i>size(tag_detections,1)
+            break
+        end
     end
     if k>2
         [x,resnorm,residual,exitflag,output] = lsqnonlin(@(x) tmp(x,x_pos,y_pos,z_pos,d),x0);
@@ -47,7 +51,7 @@ while i < size(tag_detections,1)-15
 end
 %plot3(pose_boat(:,1),pose_boat(:,2),pose_boat(:,3))
 %plot(pose_boat(:,1),pose_boat(:,2))
-%%
+
 %ekf_pose_plot=ekf_pose_raw(1000:(size(ekf_pose_raw,1)-1000),:);
 %plot3(ekf_pose_raw(:,2),ekf_pose_raw(:,1),-ekf_pose_raw(:,3))
 %axis equal
@@ -59,7 +63,7 @@ end
 %end_time=max(ekf_pose_interest(:,end))
 
 ekf_pose_interest=pose_boat(1:(size(pose_boat,1)-100),:);
-ekf_pose_interest(:,4)=ekf_pose_interest(:,4)+0.0
+ekf_pose_interest(:,4)=ekf_pose_interest(:,4)+0.15
 start_time=min(ekf_pose_interest(:,end))
 end_time=max(ekf_pose_interest(:,end))
 
@@ -69,9 +73,9 @@ imu_data_interest(:,4)=-imu_data_interest(:,4);
 
 
 
-ekf_pose_interest=ekf_pose_interest(1:9:end,:);
+ekf_pose_interest=ekf_pose_interest(1:10:end,:);
 
-
+save("pose_imu_data.mat",'ekf_pose_interest','imu_data_interest')
 %plot3(ekf_pose_interest(:,1),ekf_pose_interest(:,2),ekf_pose_interest(:,3),'.')
 %axis equal
 %%
@@ -85,14 +89,14 @@ pose_and_covarianz(k,2)=ekf_pose_interest(1,2);
 pose_and_covarianz(k,3)=ekf_pose_interest(1,3);
 pose_and_covarianz(k,4)=ekf_pose_interest(1,4);
 pose_and_covarianz(k,5)=1;
-current_v_body(k)=0;
+current_v(k,1:3)=[0 0 0];
 k=k+1;
 
 for i = 2:(size(ekf_pose_interest,1)-1)
 
     if i >2
         
-        current_v_body(k)=current_v_body(k-1)*(1-gain)+gain*norm((pose_and_covarianz(k-1,1:3)-pose_and_covarianz(k-size(imu_data_current,1)-2,1:3))/(pose_and_covarianz(k-1,4)-pose_and_covarianz(k-size(imu_data_current,1)-2,4)));
+        current_v(k,1:3)=current_v(k-1,1:3)*(1-gain)+gain*(pose_and_covarianz(k-1,1:3)-pose_and_covarianz(k-size(imu_data_current,1)-2,1:3))/(pose_and_covarianz(k-1,4)-pose_and_covarianz(k-size(imu_data_current,1)-2,4));
     end
     
     imu_data_current=imu_data_interest(find(imu_data_interest(:,end)>ekf_pose_interest(i,4) & imu_data_interest(:,end)<ekf_pose_interest(i+1,4)),:);
@@ -104,12 +108,11 @@ for i = 2:(size(ekf_pose_interest,1)-1)
         end
         
         rotation_matrix_current=euler2R(imu_data_current(j,1:3));
-        current_imu_accel(n,1:4)=[imu_data_current(j,4:6)-(inv(rotation_matrix_current)*[0 0 9.81]')' imu_data_current(j,10)];
-        current_v_body(k)=current_v_body(k-1)-current_imu_accel(n,1)*time;
-        velocity_plot(n,1:2)=[current_v_body(k) imu_data_current(j,10)];
+        current_imu_accel(n,1:4)=[(rotation_matrix_current*imu_data_current(j,4:6)'-[0 0 9.82]')' imu_data_current(j,10)];
+        current_v(k,1:3)=current_v(k-1,1:3)-current_imu_accel(n,1:3)*time;
         n=n+1;
-        current_integrated_diff=time*rotation_matrix_current*[current_v_body(k) 0 0]';
-        pose_and_covarianz(k,1:3)=pose_and_covarianz(k-1,1:3)+current_integrated_diff';
+        current_integrated_diff=time*current_v(k,1:3);
+        pose_and_covarianz(k,1:3)=pose_and_covarianz(k-1,1:3)+current_integrated_diff;
         pose_and_covarianz(k,4)=imu_data_current(j,10);
         pose_and_covarianz(k,5)=j+1;
         k=k+1;
@@ -119,9 +122,7 @@ for i = 2:(size(ekf_pose_interest,1)-1)
     pose_and_covarianz(k,3)=ekf_pose_interest(i,3);
     pose_and_covarianz(k,4)=ekf_pose_interest(i,4);
     pose_and_covarianz(k,5)=1;
-    current_v_body(k)=current_v_body(k-1)*(1-gain)+gain*norm((pose_and_covarianz(k,1:3)-pose_and_covarianz(k-size(imu_data_current,1)-1,1:3))/(pose_and_covarianz(k,4)-pose_and_covarianz(k-size(imu_data_current,1)-1,4)));
-
-    %current_v_body(k)=current_v_body(k-1)*(1-gain)+gain*norm((pose_and_covarianz(k-1,1:3)-pose_and_covarianz(k-size(imu_data_current,1)-2,1:3))/(pose_and_covarianz(k-1,4)-pose_and_covarianz(k-size(imu_data_current,1)-2,4)));
+    current_v(k,1:3)=current_v(k-1,1:3)*(1-gain)+gain*(pose_and_covarianz(k,1:3)-pose_and_covarianz(k-size(imu_data_current,1)-1,1:3))/(pose_and_covarianz(k,4)-pose_and_covarianz(k-size(imu_data_current,1)-1,4));
     k=k+1;
     
 end
@@ -131,15 +132,15 @@ end
 %     imu_data_interest(i,1:3)=current_imu_accel_NED;
 % end
 %scatter(pose_and_covarianz(:,1),pose_and_covarianz(:,2),[],pose_and_covarianz(:,5))
- current_v_body=current_v_body';
+%current_v_body=current_v_body';
 
 %plot(current_imu_accel(:,4),current_imu_accel(:,2))
 figure
 scatter3(pose_and_covarianz(:,1),pose_and_covarianz(:,2),pose_and_covarianz(:,3),[],1:size(pose_and_covarianz,1))%pose_and_covarianz(:,5))
 %scatter(pose_and_covarianz(:,4),pose_and_covarianz(:,1),[],pose_and_covarianz(:,5))
-figure
-hold on
-plot(current_imu_accel(:,4),current_imu_accel(:,1))
-plot(velocity_plot(:,2),velocity_plot(:,1))
+%figure
+%hold on
+%plot(current_imu_accel(:,4),current_imu_accel(:,1))
+%plot(velocity_plot(:,2),velocity_plot(:,1))
 
-save("pose_and_covarianz.mat",'pose_and_covarianz','current_v_body')
+save("pose_and_covarianz.mat",'pose_and_covarianz','current_v','current_imu_accel')
