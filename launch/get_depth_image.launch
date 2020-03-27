@@ -1,0 +1,66 @@
+<!-- Sample launch file for using RealSense R200 camera with default configurations -->
+<launch>
+  <arg name="camera"       default="camera" />
+  <arg name="camera_type"  default="R200" /> <!-- Type of camera -->
+  <arg name="serial_no"    default="" />
+  <arg name="usb_port_id"  default="" /> <!-- USB "Bus#-Port#" -->
+  <arg name="manager"      default="nodelet_manager" />
+
+  <!-- These 'arg' tags are just place-holders for passing values from test files.
+  The recommended way is to pass the values directly into the 'param' tags. -->
+  <arg name="mode"              default="manual" />
+  <arg name="color_fps"         default="30" />
+
+  <param name="$(arg camera)/driver/mode"              type="str"  value="$(arg mode)" />
+  <param name="$(arg camera)/driver/color_fps"         type="int"  value="$(arg color_fps)" />
+  <!-- Refer to the Wiki http://wiki.ros.org/realsense_camera for list of supported parameters -->
+
+  <param name="use_sim_time" value="true" />
+
+  <arg name="rgb_camera_info" value="color/camera_info"/>
+  <arg name="rgb_img_rect" value="color/image_raw"/>  <!--Raw color image-->
+
+  <arg name="depth_camera_info" value="depth/camera_info"/>
+  <arg name="depth_imgraw" value="depth/image_raw"/>  <!--Raw depth image-->
+  <arg name="depth_imgrect" value="depth/image_rect"/>  <!--Rectified depth image-->
+
+  <arg name="depth_reg_camera_info" value="depth_registered/camera_info"/>
+  <arg name="depth_reg_imgrect" value="depth_registered/image_rect"/>  <!--Transported to rgb_camera frame-->
+
+  <arg name="out_cloud" value="depth_registered/points"/>
+
+  <group ns="$(arg camera)">
+    <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen"/>
+
+    <include file="$(find realsense_camera)/launch/includes/nodelet.launch.xml">
+      <arg name="manager"      value="$(arg manager)" />
+      <arg name="camera"       value="$(arg camera)" />
+      <arg name="camera_type"  value="$(arg camera_type)" />
+      <arg name="serial_no"    value="$(arg serial_no)" />
+      <arg name="usb_port_id"  value="$(arg usb_port_id)" />
+    </include>
+
+    <!-- Convert depth from mm (in uint16) to meters -->
+    <node pkg="nodelet" type="nodelet" name="convert_metric" args="load depth_image_proc/convert_metric $(arg manager)">
+      <remap from="image_raw" to="$(arg depth_imgraw)"/>
+      <remap from="image" to="$(arg depth_imgrect)"/>
+    </node>
+
+    <!-- Transport depth image in rgb_camera frame -->
+    <node pkg="nodelet" type="nodelet" name="register" args="load depth_image_proc/register $(arg manager)">
+      <remap from="rgb/camera_info" to="$(arg rgb_camera_info)"/>
+      <remap from="depth/camera_info" to="$(arg depth_camera_info)"/>
+      <remap from="depth/image_rect" to="$(arg depth_imgrect)"/>
+      <remap from="depth_registered/camera_info" to="$(arg depth_reg_camera_info)"/>
+      <remap from="depth_registered/image_rect" to="$(arg depth_reg_imgrect)"/>
+    </node>
+
+    <!-- Construct point cloud of the rgb and depth topics -->
+    <node pkg="nodelet" type="nodelet" name="points_xyzrgb" args="load depth_image_proc/point_cloud_xyzrgb $(arg manager) --no-bond">
+      <remap from="rgb/camera_info" to="$(arg rgb_camera_info)" />
+      <remap from="rgb/image_rect_color" to="$(arg rgb_img_rect)"/>
+      <remap from="depth_registered/image_rect" to="$(arg depth_reg_imgrect)"/>
+      <remap from="depth_registered/points" to="$(arg out_cloud)"/>
+    </node>
+  </group>
+</launch>

@@ -294,7 +294,7 @@ def draw_net_rviz(msg):
     pose_boat = np.array([msg.pose[0].position.x, msg.pose[0].position.y, msg.pose[0].position.z])
     pose_boat = orientation_boat.inverse.rotate(-pose_boat)
     marker = Marker()
-    marker.header.frame_id = "local_boat"
+    marker.header.frame_id = "d435i_link"
     marker.id = 0
     marker.type = marker.CYLINDER
     marker.action = marker.ADD

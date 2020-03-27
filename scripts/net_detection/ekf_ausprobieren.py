@@ -1,36 +1,15 @@
 import ekf_class
-
+import numpy as np
 ekf = ekf_class.ExtendedKalmanFilter()
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
 ekf.prediction()
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
 
-ekf.update(1, 0.5, 0.5)
-print(ekf.get_z_est(0.5, 0.5))
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
-ekf.prediction()
-ekf.update(1, 0.5, 0.5)
-print(ekf.get_z_est(0.5, 0.5))
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
-ekf.prediction()
-print(ekf.get_p_mat())
-ekf.update(1, 0.5, 0.5)
-print(ekf.get_z_est(0.5, 0.5))
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
-ekf.prediction()
-ekf.update(1, 0.5, 0.5)
-print(ekf.get_z_est(0.5, 0.5))
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
-ekf.prediction()
-ekf.update(1, 0.5, 0.5)
-print(ekf.get_z_est(0.5, 0.5))
-print(ekf.get_x_est())
-print(ekf.get_p_mat())
+A=np.asarray([[1,1,0],[0,3,2],[3,2,1]])
 
-print(ekf.get_z_est(0.5, 0.5))
+for i in range(5000):
+    print(i)
+    ekf.prediction()
+    ekf.update(A)
+
+
+
+
