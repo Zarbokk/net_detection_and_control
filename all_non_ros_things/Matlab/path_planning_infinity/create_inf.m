@@ -67,7 +67,7 @@ axis equal
 
 
 current_goal=randi(N)%goal of uboot
-current_goal=10
+% current_goal=10
 plot(waypoints_x(current_goal),waypoints_y(current_goal), 'ro', 'MarkerSize', 10)
 current_pos_boat=[rand*3,rand*1.5]
 %current_pos_boat=[1.5,0]
@@ -82,11 +82,11 @@ y_max=waypoints_y(current_goal)-current_pos_boat(2)
 x_max=waypoints_x(current_goal)-current_pos_boat(1)
 %%
 if x_max > 0
-    x=0:0.01:x_max
-    c_cubic=-atan2(-y_max,-x_max)
+    x=0:0.001:x_max
+    c_cubic=tan(atan2(-y_max,-x_max))
 else    
-    x=x_max:0.01:0
-    c_cubic=atan2(-y_max,-x_max)
+    x=x_max:0.001:0
+    c_cubic=tan(atan2(-y_max,-x_max))
 end
 
 d_cubic=0

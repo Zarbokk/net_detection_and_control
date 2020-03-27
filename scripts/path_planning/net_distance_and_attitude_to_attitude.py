@@ -5,6 +5,7 @@ from pyquaternion import Quaternion
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 from mavros_msgs.msg import AttitudeTarget
+
 depth_des = 1.0
 distance_to_net_des = 1.5
 depth = 0
@@ -14,6 +15,7 @@ pitch_current = 0
 net_plane_parameter = np.asarray([0.0, 0.0, 0.0])
 publisher_marker = rospy.Publisher('path_planning', MarkerArray, queue_size=1)
 publisher_waypoint = rospy.Publisher('mavros/setpoint_raw/attitude', AttitudeTarget, queue_size=1)
+
 
 def callback_imu(msg):
     # msg=Imu()
@@ -25,6 +27,7 @@ def callback_imu(msg):
                          z=msg.orientation.z)
 
     [yaw, pitch_current, roll_current] = tmpquat.inverse.yaw_pitch_roll
+    print(pitch_current * 180 / np.pi, roll_current * 180 / np.pi)
 
 
 def callback_barometer(msg):
@@ -42,7 +45,7 @@ def callback_net_distance(msg):
 
 
 def pathplanning():
-    global depth, net_plane_parameter, depth_des, distance_to_net_des, publisher_marker,publisher_waypoint
+    global depth, net_plane_parameter, depth_des, distance_to_net_des, publisher_marker, publisher_waypoint
     # transform into real_world_coordinates
     f = 476.0
     c = -net_plane_parameter[2]
@@ -53,8 +56,8 @@ def pathplanning():
     a = a / abs(x_real) * 0.5
     d = np.sqrt((x_real * a) ** 2 + x_real ** 2)
     e = np.sqrt(d ** 2 + distance_to_net_des ** 2)
-    alpha = np.pi/2+np.arctan(a)#np.pi - np.pi / 2 - np.arctan(abs(a))
-    #if a > 0:
+    alpha = np.pi / 2 + np.arctan(a)  # np.pi - np.pi / 2 - np.arctan(abs(a))
+    # if a > 0:
     #    alpha = alpha + np.pi / 2
     gamma = np.arcsin(distance_to_net_des * np.sin(np.pi / 2) / e)
 
@@ -68,22 +71,22 @@ def pathplanning():
     a_cubic = -2.0 * b_cubic / x_max / 3.0
 
     stammfunktion = a_cubic * x_max ** 3 + b_cubic * x_max ** 2 + c_cubic * x_max + d_cubic
-    pitch_gain=3
-    pitch = pitch_gain*np.arctan((depth - depth_des) / np.sqrt(stammfunktion ** 2 + x_max ** 2))
+    pitch_gain = 3
+    pitch = pitch_gain * np.arctan((depth - depth_des) / np.sqrt(stammfunktion ** 2 + x_max ** 2))
 
     ableitung = 3.0 * a_cubic * (x_max / 2.0) ** 2 + 2.0 * b_cubic * (x_max / 2.0) + c_cubic
     yaw = np.arctan(ableitung)
-    #pitch = np.pi / 4
-    print("pitch:",pitch * 180 / np.pi)
+    # pitch = np.pi / 4
+    print("pitch:", pitch * 180 / np.pi)
 
-    #yaw=-np.pi/2
-    print("yaw:",yaw * 180 / np.pi)
-    roll=0
+    # yaw=-np.pi/2
+    print("yaw:", yaw * 180 / np.pi)
+    roll = 0
     qz_90n = Quaternion(
         axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
         axis=[1, 0, 0], angle=roll)
 
-    thrust=0.1
+    thrust = 0.0
     send_waypoint = AttitudeTarget()
     send_waypoint.type_mask = 0
     send_waypoint.orientation.x = qz_90n.x
@@ -94,7 +97,6 @@ def pathplanning():
     # 0.2 works
     send_waypoint.thrust = thrust
     publisher_waypoint.publish(send_waypoint)
-
 
     # print("pitch:")
     # print(-np.arctan((wanted_depth - depth) / 1)*180/np.pi)
@@ -123,7 +125,7 @@ def pathplanning():
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = x  # x
             marker.pose.position.y = -(a_cubic * x ** 3 + b_cubic * x ** 2 + c_cubic * x + d_cubic)  # y
-            marker.pose.position.z = x/x_max*(depth - depth_des)  # z
+            marker.pose.position.z = x / x_max * (depth - depth_des)  # z
             markerArray.markers.append(marker)
             i = i + 1
         publisher_marker.publish(markerArray)
@@ -136,7 +138,7 @@ def main():
     rospy.Subscriber("/barometer", PoseStamped, callback_barometer, queue_size=1)
     rospy.Subscriber("/estimated_distance_to_net", PoseStamped, callback_net_distance, queue_size=1)
     while not rospy.is_shutdown():
-        pathplanning()
+        # pathplanning()
         rate.sleep()
         pass
 
