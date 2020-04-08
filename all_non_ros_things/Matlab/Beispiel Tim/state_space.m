@@ -15,7 +15,7 @@ B_fun = matlabFunction(B,'File','Linerize_B','Vars',{v,u}); % write to file
 Q=diag([1 1 1 100 10 10 1 1 1 1000 1000 1000]);
 R=eye(6)*10;
 lin_A=Linerize_A([0;0;0;0;0;0;0;0;0;0;0;0],0)
-lin_B=Linerize_B([0;0;0;0;0;0;0;0;0;0;0;0],0)
+lin_B=Linerize_B([0;0;0;0;0;0;0;0;0;0;0;0],0)   
 
 length(lin_A)-rank(ctrb(lin_A,lin_B))
 
