@@ -2,7 +2,7 @@ import numpy as np
 
 
 class ExtendedKalmanFilter(object):
-    def __init__(self, x0=[-np.sqrt(2), np.sqrt(2), -np.sqrt(2), np.sqrt(2)]):  # x y z d bei der gleichung point*n=d wobei n=[x y z]'
+    def __init__(self, x0=[np.sqrt(2), -np.sqrt(2), np.sqrt(2), np.sqrt(2)]):  # x y z d bei der gleichung point*n=d wobei n=[x y z]'
         number_of_states = 4
         """ initialize EKF """
         self.__x_est_0 = np.array([[x0[0]], [x0[1]], [x0[2]], [x0[3]]]).reshape((number_of_states, 1))
@@ -133,7 +133,7 @@ class ExtendedKalmanFilter(object):
         #print("z_meas",measurements[0:5,:])
         #print("z_est", z_est[0:5,:])
         #print("y_tild", y_tild[0:5,:])
-        print ("number_of_measurements",number_of_measurements)
+        #print ("number_of_measurements",number_of_measurements)
         # print("zmeas = " + str(z_meas.transpose()))
         # print("yest = " + str(y_est.transpose()))
         # print("ytild = " + str(y_tild.transpose()))
@@ -178,7 +178,7 @@ class ExtendedKalmanFilter(object):
         self.normalize_state()
         if self.__x_est[3]>5:
             self.__x_est[3]=0
-        if self.__x_est[3] < -5:
+        if self.__x_est[3] < 0:
             self.__x_est[3] = 0
         self.__x_est[1]=0
         #print("self.__p_mat = " + str(self.__p_mat))
