@@ -2,7 +2,7 @@ import numpy as np
 
 
 class ExtendedKalmanFilter(object):
-    def __init__(self, x0=[1, 0, 0, 0.5]):  # x y z d bei der gleichung point*n=d wobei n=[x y z]'
+    def __init__(self, x0=[0, 1, 0, 0.5]):  # x y z d bei der gleichung point*n=d wobei n=[x y z]'
         number_of_states = 4
         """ initialize EKF """
         self.__x_est_0 = np.array([[x0[0]], [x0[1]], [x0[2]], [x0[3]]]).reshape((number_of_states, 1))

@@ -25,10 +25,10 @@ def normalize_vector(v):
 
 
 def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker):
-    #right
-    s_v = np.asarray([[current_state_ekf_r[3] / current_state_ekf_r[0], 0, 0]], dtype="float32")
-    r_v_1 = np.asarray([[s_v[0, 0] + 0.5,
-                         (current_state_ekf_r[3] - (s_v[0, 0] + 0.5) * current_state_ekf_r[0]) / current_state_ekf_r[1],
+    # right
+    s_v = np.asarray([[0, current_state_ekf_r[3] / current_state_ekf_r[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[(current_state_ekf_r[3] - (s_v[0, 1] + 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
+                         s_v[0, 1] + 0.5,
                          0]],
                        dtype="float32")
 
@@ -44,7 +44,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
             marker = Marker()
-            marker.header.frame_id = "d435i_link"
+            marker.header.frame_id = "base_link"
             marker.id = i
             marker.type = marker.SPHERE
             marker.action = marker.ADD
@@ -61,10 +61,10 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             markerArray.markers.append(marker)
             i = i + 1
 
-    #left
-    s_v = np.asarray([[current_state_ekf_l[3] / current_state_ekf_l[0], 0, 0]], dtype="float32")
-    r_v_1 = np.asarray([[s_v[0, 0] + 0.5,
-                         (current_state_ekf_l[3] - (s_v[0, 0] + 0.5) * current_state_ekf_l[0]) / current_state_ekf_l[1],
+    # left
+    s_v = np.asarray([[0, current_state_ekf_l[3] / current_state_ekf_l[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[(current_state_ekf_l[3] - (s_v[0, 1] + 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
+                         s_v[0, 1] + 0.5,
                          0]],
                        dtype="float32")
 
@@ -77,7 +77,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
             marker = Marker()
-            marker.header.frame_id = "d435i_link"
+            marker.header.frame_id = "base_link"
             marker.id = i
             marker.type = marker.SPHERE
             marker.action = marker.ADD
@@ -130,7 +130,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
     # print points
 
     header = Header()
-    header.frame_id = "d435i_link"
+    header.frame_id = "base_link"
     pc2 = point_cloud2.create_cloud(header, fields, points)
     pub.publish(pc2)
 
@@ -144,14 +144,14 @@ def callback(data, list):
     points[:, 1] = pc['y']
     points[:, 2] = pc['z']
     # print(points.shape)
-    points = points[::10, :]
+    points = points[::1, :]
     # print(points.shape)
     points = np.float32(points)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K = 8
+    K = 2
     ret, label, center = cv2.kmeans(points, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
-    best_match = np.argmin(abs(center[:, 2] - 1))
+    best_match = np.argmin(abs(center[:, 1] - 1))
     A = points[label.ravel() == best_match]
     A = A[::10, :]
 
@@ -160,18 +160,18 @@ def callback(data, list):
     print("center", center[best_match, :])
     median_center = np.zeros((3))
     # from koordinate system (z raus) zu x aus der kamera raus
-    median_center[0] = center[best_match, 2]
-    median_center[1] = -center[best_match, 0]
-    median_center[2] = -center[best_match, 1]
+    median_center[0] = center[best_match, 0]
+    median_center[1] = center[best_match, 1]
+    median_center[2] = center[best_match, 2]
     print("median_center", median_center)
     current_mean_angle = np.arctan2(median_center[1], median_center[0])
     print("current_mean_angle", current_mean_angle)
     left_segment = []
     right_segment = []
     for i in range(A.shape[0]):
-        x = A[i, 2]
-        y = -A[i, 0]
-        z = -A[i, 1]
+        x = A[i, 0]
+        y = A[i, 1]
+        z = A[i, 2]
         if np.arctan2(y, x) > current_mean_angle:
             left_segment.append([x, y, z])
         else:
