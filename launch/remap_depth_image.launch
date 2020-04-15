@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="launch_prefix" default="" /> <!-- set to value="gdbserver localhost:10000" for remote debugging -->
+
+    <!-- Start Remapping of Depth points
+      <node pkg="net_detection_and_control" type="remap_depth_gazebo.py" name="depth_remap" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)" >
+      </node>
+-->
+    <!-- Create link between global tank and base link -->
+      <node pkg="net_detection_and_control" type="mapping_global_tank_to_base_link.py" name="mapping_b_to_m" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)" >
+      </node>
+</launch>

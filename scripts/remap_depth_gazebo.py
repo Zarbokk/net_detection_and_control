@@ -1,20 +1,13 @@
-# !/usr/bin/env python
-from cv_bridge import CvBridge, CvBridgeError
-from geometry_msgs.msg import PointStamped
+#!/usr/bin/env python
+
 from sensor_msgs.msg import Image, PointCloud2, PointField  # CompressedImage  # Image
 from sensor_msgs import point_cloud2
-from visualization_msgs.msg import Marker, MarkerArray
 import cv2
 import rospy
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import axes3d, Axes3D
 import numpy as np
-import pyrealsense2 as rs
 import ros_numpy
-from sklearn.cluster import DBSCAN
 import struct
 from std_msgs.msg import Header
-import ekf_class
 
 
 def callback(data, list):
@@ -39,8 +32,8 @@ def callback(data, list):
     points_cloud = []
     for i in range(points.shape[0]):
         x = points[i, 0]
-        y = points[i, 2]
-        z = -points[i, 1]
+        y = -points[i, 2]
+        z = points[i, 1]
         b, g, r, a = struct.unpack("BBBB", points[i, 3])
         # print("a",b,g,r,a)
         # r = 0

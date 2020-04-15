@@ -2,6 +2,7 @@
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import Image, PointCloud2, PointField  # CompressedImage  # Image
+from geometry_msgs.msg import PoseStamped
 from sensor_msgs import point_cloud2
 from visualization_msgs.msg import Marker, MarkerArray
 import cv2
@@ -15,6 +16,7 @@ from sklearn.cluster import DBSCAN
 import struct
 from std_msgs.msg import Header
 import ekf_class
+from net_detection_and_control.msg import ekf_data
 
 
 def normalize_vector(v):
@@ -27,8 +29,8 @@ def normalize_vector(v):
 def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker):
     # right
     s_v = np.asarray([[0, current_state_ekf_r[3] / current_state_ekf_r[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_r[3] - (s_v[0, 1] + 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
-                         s_v[0, 1] + 0.5,
+    r_v_1 = np.asarray([[(current_state_ekf_r[3] - (s_v[0, 1] - 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
+                         s_v[0, 1] - 0.5,
                          0]],
                        dtype="float32")
 
@@ -63,8 +65,8 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
 
     # left
     s_v = np.asarray([[0, current_state_ekf_l[3] / current_state_ekf_l[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_l[3] - (s_v[0, 1] + 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
-                         s_v[0, 1] + 0.5,
+    r_v_1 = np.asarray([[(current_state_ekf_l[3] - (s_v[0, 1] - 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
+                         s_v[0, 1] - 0.5,
                          0]],
                        dtype="float32")
 
@@ -136,36 +138,37 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
 
 
 def callback(data, list):
-    pub, ekf_l, ekf_r, publisher_marker = list
+    pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
 
     pc = ros_numpy.numpify(data)
-    points = np.zeros((pc.shape[0], 3))
-    points[:, 0] = pc['x']
-    points[:, 1] = pc['y']
-    points[:, 2] = pc['z']
+    points = np.zeros((pc.shape[0] * pc.shape[1], 3))
+    # remap from camera coordinate system to base_link
+    points[:, 0] = pc['x'].flatten()
+    points[:, 1] = -pc['z'].flatten()
+    points[:, 2] = pc['y'].flatten()
     # print(points.shape)
-    points = points[::1, :]
+    points = points[::2, :]
     # print(points.shape)
     points = np.float32(points)
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K = 2
+    K = 1
     ret, label, center = cv2.kmeans(points, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
     best_match = np.argmin(abs(center[:, 1] - 1))
     A = points[label.ravel() == best_match]
-    A = A[::10, :]
+    A = A[::20, :]
 
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
-    print("center", center[best_match, :])
+    # print("center", center[best_match, :])
     median_center = np.zeros((3))
     # from koordinate system (z raus) zu x aus der kamera raus
     median_center[0] = center[best_match, 0]
     median_center[1] = center[best_match, 1]
     median_center[2] = center[best_match, 2]
-    print("median_center", median_center)
+    # print("median_center", median_center)
     current_mean_angle = np.arctan2(median_center[1], median_center[0])
-    print("current_mean_angle", current_mean_angle)
+    # print("current_mean_angle", current_mean_angle)
     left_segment = []
     right_segment = []
     for i in range(A.shape[0]):
@@ -177,9 +180,9 @@ def callback(data, list):
         else:
             right_segment.append([x, y, z])
     left_segment = np.asarray(left_segment)
-    print("left_segment", left_segment.shape)
+    # print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
-    print("right_segment", right_segment.shape)
+    # print("right_segment", right_segment.shape)
 
     # update EKF
     ekf_l.prediction()
@@ -189,7 +192,7 @@ def callback(data, list):
 
     ekf_r.prediction()
 
-    print("EKF Update:")
+    # print("EKF Update:")
     ekf_r.update(right_segment)
     current_state_ekf_r = ekf_r.get_x_est()
 
@@ -197,17 +200,35 @@ def callback(data, list):
     if rviz:
         printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker)
 
+    msg = ekf_data()
+    msg.header.frame_id = "base_link"
+    msg.header.stamp = rospy.Time.now()
+    msg.d1 = current_state_ekf_r[3]
+    msg.n1_x = current_state_ekf_r[0]
+    msg.n1_y = current_state_ekf_r[1]
+    msg.n1_z = current_state_ekf_r[2]
+    msg.d2 = current_state_ekf_l[3]
+    msg.n2_x = current_state_ekf_l[0]
+    msg.n2_y = current_state_ekf_l[1]
+    msg.n2_z = current_state_ekf_l[2]
+    publisher_plane.publish(msg)
+
+
+
+    rate.sleep()
+
 
 def listener():
     rospy.init_node('publisher', anonymous=True)
+    rate = rospy.Rate(30)
     ekf_l = ekf_class.ExtendedKalmanFilter()
     ekf_r = ekf_class.ExtendedKalmanFilter()
-    pub = rospy.Publisher("point_cloud2", PointCloud2, queue_size=2)
+    pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
     publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
-    rospy.Subscriber("/d435i/depth/color/points", PointCloud2, callback, [pub, ekf_l, ekf_r, publisher_marker])
+    publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
+    rospy.Subscriber("/camera/depth/points", PointCloud2, callback,
+                     [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1)
     rospy.spin()
-    # video.release()
-    cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
