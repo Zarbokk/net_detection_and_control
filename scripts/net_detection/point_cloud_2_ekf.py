@@ -28,8 +28,8 @@ def normalize_vector(v):
 
 def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker):
     # right
-    s_v = np.asarray([[0, current_state_ekf_r[3] / current_state_ekf_r[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_r[3] - (s_v[0, 1] - 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
+    s_v = np.asarray([[0, current_state_ekf_r[2] / current_state_ekf_r[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[(current_state_ekf_r[2] - (s_v[0, 1] - 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
                          s_v[0, 1] - 0.5,
                          0]],
                        dtype="float32")
@@ -64,8 +64,8 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             i = i + 1
 
     # left
-    s_v = np.asarray([[0, current_state_ekf_l[3] / current_state_ekf_l[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_l[3] - (s_v[0, 1] - 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
+    s_v = np.asarray([[0, current_state_ekf_l[2] / current_state_ekf_l[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[(current_state_ekf_l[2] - (s_v[0, 1] - 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
                          s_v[0, 1] - 0.5,
                          0]],
                        dtype="float32")
@@ -147,16 +147,20 @@ def callback(data, list):
     points[:, 1] = -pc['z'].flatten()
     points[:, 2] = pc['y'].flatten()
     # print(points.shape)
-    points = points[::2, :]
+    points = points[::1, :]
     # print(points.shape)
     points = np.float32(points)
+    points = points[points[:, 1] < 5]
+    points = points[points[:, 1] > -5]
+
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K = 1
     ret, label, center = cv2.kmeans(points, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
     best_match = np.argmin(abs(center[:, 1] - 1))
     A = points[label.ravel() == best_match]
-    A = A[::20, :]
+
+    A = A[::11, :]
 
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
@@ -180,9 +184,9 @@ def callback(data, list):
         else:
             right_segment.append([x, y, z])
     left_segment = np.asarray(left_segment)
-    # print("left_segment", left_segment.shape)
+    print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
-    # print("right_segment", right_segment.shape)
+    print("right_segment", right_segment.shape)
 
     # update EKF
     ekf_l.prediction()
@@ -199,23 +203,21 @@ def callback(data, list):
     rviz = True
     if rviz:
         printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker)
-        print("current_state_ekf_r",current_state_ekf_r)
-        print("current_state_ekf_l",current_state_ekf_l)
+        print("current_state_ekf_r", current_state_ekf_r)
+        print("current_state_ekf_l", current_state_ekf_l)
 
     msg = ekf_data()
     msg.header.frame_id = "base_link"
     msg.header.stamp = rospy.Time.now()
-    msg.d1 = current_state_ekf_r[3]
+    # msg.d1 = current_state_ekf_r[3]
     msg.n1_x = current_state_ekf_r[0]
     msg.n1_y = current_state_ekf_r[1]
     msg.n1_z = current_state_ekf_r[2]
-    msg.d2 = current_state_ekf_l[3]
+    # msg.d2 = current_state_ekf_l[3]
     msg.n2_x = current_state_ekf_l[0]
     msg.n2_y = current_state_ekf_l[1]
     msg.n2_z = current_state_ekf_l[2]
     publisher_plane.publish(msg)
-
-
 
     rate.sleep()
 
