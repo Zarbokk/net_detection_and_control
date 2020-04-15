@@ -199,6 +199,8 @@ def callback(data, list):
     rviz = True
     if rviz:
         printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker)
+        print("current_state_ekf_r",current_state_ekf_r)
+        print("current_state_ekf_l",current_state_ekf_l)
 
     msg = ekf_data()
     msg.header.frame_id = "base_link"

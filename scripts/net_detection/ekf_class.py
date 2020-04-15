@@ -32,8 +32,8 @@ class ExtendedKalmanFilter(object):
         # --> see measurement_covariance_model
         self.__sig_r = 1
         self.__r_mat = np.array(np.diag([self.__sig_r ** 2,
-                                        self.__sig_r ** 2,
-                                        self.__sig_r ** 2]))
+                                         self.__sig_r ** 2,
+                                         self.__sig_r ** 2]))
 
         # initial values and system dynamic (=eye)
         self.__i_mat = np.eye(4)
@@ -65,7 +65,7 @@ class ExtendedKalmanFilter(object):
 
     def normalize_state(self):
         norm = np.linalg.norm(self.__x_est[0:3])
-        if norm !=0:
+        if norm != 0:
             self.__x_est[0:3] = self.__x_est[0:3] / norm
 
     # measurement function
@@ -109,13 +109,13 @@ class ExtendedKalmanFilter(object):
             h_jacobian[i, 2, 1] = h_3_n1
             h_jacobian[i, 2, 2] = h_3_n2
             h_jacobian[i, 2, 3] = h_3_d
-            #print("h_jacobian[i,:,:]",h_jacobian[i,:,:])
+            # print("h_jacobian[i,:,:]",h_jacobian[i,:,:])
         return h_jacobian  # dim : [number_of_measurements X 3 X 4]
 
     def prediction(self):
         """ prediction """
         self.__x_est = self.__x_est  # + np.random.randn(3, 1) * 1  # = I * x_est
-        self.__p_mat = np.matmul(self.__i_mat,np.matmul(self.__p_mat,self.__i_mat)) + self.__q_mat
+        self.__p_mat = np.matmul(self.__i_mat, np.matmul(self.__p_mat, self.__i_mat)) + self.__q_mat
         return True
 
     def update(self, measurements):  # z_meas, x_pos, y_pos):
@@ -129,59 +129,57 @@ class ExtendedKalmanFilter(object):
         z_est = self.h(self.__x_est, measurements, number_of_measurements)
 
         y_tild = measurements - z_est
-        #print("self.__x_est",self.__x_est)
-        #print("z_meas",measurements[0:5,:])
-        #print("z_est", z_est[0:5,:])
-        #print("y_tild", y_tild[0:5,:])
-        #print ("number_of_measurements",number_of_measurements)
+        # print("self.__x_est",self.__x_est)
+        # print("z_meas",measurements[0:5,:])
+        print("z_est", z_est[0:5,:])
+        # print("y_tild", y_tild[0:5,:])
+        # print ("number_of_measurements",number_of_measurements)
         # print("zmeas = " + str(z_meas.transpose()))
         # print("yest = " + str(y_est.transpose()))
         # print("ytild = " + str(y_tild.transpose()))
         # calc K-gain
 
         h_jac_mat = self.h_jacobian(self.__x_est, measurements, number_of_measurements)
-        #print("h_jac_mat",h_jac_mat[0,:,:])
+        # print("h_jac_mat",h_jac_mat[0,:,:])
         # print("h_jac_mat")
         # print(h_jac_mat.shape)
         # print(i_tag)
         # print(y_tild_red)
         p_matrix_current = self.__p_mat
-        #print("p_matrix_current = " + str(p_matrix_current))
+        # print("p_matrix_current = " + str(p_matrix_current))
         tmp = np.zeros((4, 4))
         for i in range(number_of_measurements):
             s_mat = np.matmul(h_jac_mat[i, :, :],
                               np.matmul(p_matrix_current,
                                         h_jac_mat[i, :, :].transpose())) + self.__r_mat  # = H * P * H^t + R
-            #print("smat = " + str(np.linalg.inv(s_mat)))
+            # print("smat = " + str(np.linalg.inv(s_mat)))
 
             k_mat = np.matmul(np.matmul(p_matrix_current, h_jac_mat[i, :, :].transpose()), np.linalg.inv(s_mat))
             # print(i_tag)
-            #print("k_mat = " + str(k_mat))
+            # print("k_mat = " + str(k_mat))
             # print("y_tild = " + str(y_tild_red))
             # print("hier")
-            #print("y_tild", y_tild[i, :].shape)
+            # print("y_tild", y_tild[i, :].shape)
             # print(k_mat.transpose())
             # print(measurements)
-            #print("h_jac_mat[i, :, :]",h_jac_mat[i, :, :])
+            # print("h_jac_mat[i, :, :]",h_jac_mat[i, :, :])
             self.__x_est = self.__x_est + np.matmul(k_mat, y_tild[i, :]).reshape(4, 1)  # = x_est + k * y_tild
             # self.__x_est[2, 0] = np.abs(self.__x_est[2, 0])
-            #print(np.matmul(k_mat, h_jac_mat[i, :, :]))
+            # print(np.matmul(k_mat, h_jac_mat[i, :, :]))
             tmp = tmp + np.matmul(k_mat, h_jac_mat[i, :, :])  # KH+KH+KH+...
-            #self.__p_mat = np.matmul((self.__i_mat - np.matmul(k_mat, h_jac_mat[i, :, :])), self.__p_mat)  # = (I-KH)*P
-        #print("self.__p_mat = " + str(self.__p_mat))
+            # self.__p_mat = np.matmul((self.__i_mat - np.matmul(k_mat, h_jac_mat[i, :, :])), self.__p_mat)  # = (I-KH)*P
+        # print("self.__p_mat = " + str(self.__p_mat))
 
-        #print("tmp",tmp)
+        # print("tmp",tmp)
         self.__p_mat = np.matmul((self.__i_mat - tmp), self.__p_mat)
 
-
-
         self.normalize_state()
-        if self.__x_est[3]>5:
-            self.__x_est[3]=0
+        if self.__x_est[3] > 5:
+            self.__x_est[3] = 0
         if self.__x_est[3] < 0:
             self.__x_est[3] = 0
-        #self.__x_est[2]=0
-        #print("self.__p_mat = " + str(self.__p_mat))
-        #print("done")
+        self.__x_est[2] = 0
+        # print("self.__p_mat = " + str(self.__p_mat))
+        # print("done")
         # print("x_up= " + str(self.__x_est.transpose()))
         return True
