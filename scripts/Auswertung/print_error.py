@@ -34,7 +34,8 @@ def myhook():
     global x_px4_pos, y_px4_pos, z_px4_pos, error_pos, timestamp_px4_pos
     print("saving")
     np.savetxt("px4_pos.csv",
-               np.transpose([np.asarray(x_px4_pos, dtype=np.float32), np.asarray(y_px4_pos, dtype=np.float32),
+               np.transpose([np.asarray(x_px4_pos, dtype=np.float32),
+                             np.asarray(y_px4_pos, dtype=np.float32),
                              np.asarray(z_px4_pos, dtype=np.float32),
                              np.asarray(error_pos, dtype=np.float32),
                              np.asarray(timestamp_px4_pos, dtype=np.float32)]), delimiter=",")

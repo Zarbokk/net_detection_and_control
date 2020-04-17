@@ -1,4 +1,5 @@
 import numpy as np
+import rospy
 
 
 class ExtendedKalmanFilter(object):
@@ -22,13 +23,15 @@ class ExtendedKalmanFilter(object):
 
         # measurement noise
         # --> see measurement_covariance_model
-        self.__sig_r = 0.5
+        self.__sig_r = 2
         self.__r_mat = np.array(np.diag([self.__sig_r ** 2,
                                          self.__sig_r ** 2]))
 
         # initial values and system dynamic (=eye)
         self.__i_mat = np.eye(2)
 
+        self.__last_time_stamp_update = rospy.get_time()
+        self.__last_time_stamp_prediction = rospy.get_time()
         # self.__z_meas = np.zeros(self.__max_tag)
         # self.__y_est = np.zeros(self.__max_tag)
         # self.__r_dist = np.zeros(self.__max_tag)
@@ -69,10 +72,26 @@ class ExtendedKalmanFilter(object):
 
         return np.eye(2)  # dim : [number_of_measurements X 3 X 4]
 
-    def prediction(self):
+    def f_jacobian(self, alpha):
+        F = np.eye(2)
+        F[0, 0] = (np.sin(alpha) ** 2 + np.cos(alpha) ** 2) / ((np.cos(alpha) - self.__x_est[0] * np.sin(alpha)) ** 2)
+        F[0, 1] = 0
+        F[1, 0] = self.__x_est[0] * np.sin(alpha) / ((np.cos(alpha) - self.__x_est[1] * np.sin(alpha)) ** 2)
+        F[1, 1] = 1 / (np.cos(alpha) - self.__x_est[0] * np.sin(alpha))
+        return F
+
+    def prediction(self, roation_z_vel):
         """ prediction """
-        self.__x_est = self.__x_est  # + np.random.randn(3, 1) * 1  # = I * x_est
-        self.__p_mat = np.matmul(self.__i_mat, np.matmul(self.__p_mat, self.__i_mat)) + self.__q_mat
+        delta_t = rospy.get_time() - self.__last_time_stamp_prediction
+        self.__last_time_stamp_prediction = rospy.get_time()
+        if delta_t == 0:
+            delta_t = 0.02
+
+        alpha = roation_z_vel * delta_t
+        self.__x_est[0] = (np.sin(alpha) + np.cos(alpha) * self.__x_est[0]) / (
+                np.cos(alpha) - np.sin(alpha) * self.__x_est[0])  # m update
+        self.__x_est[1] = self.__x_est[1] / (np.cos(alpha) - np.sin(alpha) * self.__x_est[0])  # b update
+        self.__p_mat = np.matmul(self.f_jacobian(alpha), np.matmul(self.__p_mat, np.transpose(self.f_jacobian(alpha)))) + self.__q_mat
         return True
 
     def update(self, measurements):  # z_meas, x_pos, y_pos):
@@ -83,10 +102,10 @@ class ExtendedKalmanFilter(object):
         # estimate measurement from x_est
         # print("measurements",measurements)
         z_est = self.h(self.__x_est, measurements, number_of_measurements)
-        #print("z_est", z_est.shape)
-        #print("measurements",measurements.shape)
-        y_tild = measurements.reshape((2,1)) - z_est
-        #print("y_tild",y_tild.shape)
+        # print("z_est", z_est.shape)
+        # print("measurements",measurements.shape)
+        y_tild = measurements.reshape((2, 1)) - z_est
+        # print("y_tild",y_tild.shape)
         h_jac_mat = self.h_jacobian(self.__x_est, measurements, number_of_measurements)
 
         p_matrix_current = self.__p_mat
@@ -96,7 +115,7 @@ class ExtendedKalmanFilter(object):
                                     h_jac_mat.transpose())) + self.__r_mat  # = H * P * H^t + R
 
         k_mat = np.matmul(np.matmul(p_matrix_current, h_jac_mat.transpose()), np.linalg.inv(s_mat))
-        #print("k_mat", k_mat.shape)
+        # print("k_mat", k_mat.shape)
         self.__x_est = self.__x_est + np.matmul(k_mat, y_tild).reshape(2, 1)  # = x_est + k * y_tild
 
         self.__p_mat = np.matmul((self.__i_mat - np.matmul(k_mat, h_jac_mat)), self.__p_mat)  # (i-KH)*p mat

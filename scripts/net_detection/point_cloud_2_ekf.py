@@ -7,6 +7,7 @@ from sensor_msgs import point_cloud2
 from visualization_msgs.msg import Marker, MarkerArray
 import cv2
 import rospy
+from sensor_msgs.msg import Imu
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D
 import numpy as np
@@ -135,6 +136,16 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
     pc2 = point_cloud2.create_cloud(header, fields, points)
     pub.publish(pc2)
 
+def callback_imu(msg, tmp_list):
+    [ekf_l, ekf_r] = tmp_list
+
+    x_rot_vel = msg.angular_velocity.x
+    y_rot_vel = msg.angular_velocity.y
+    z_rot_vel = msg.angular_velocity.z
+    ekf_l.prediction(z_rot_vel)
+    ekf_r.prediction(z_rot_vel)
+
+
 
 def callback(data, list):
     pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
@@ -196,7 +207,7 @@ def callback(data, list):
     # print("inverse:", np.linalg.inv(np.matmul(np.transpose(A), A)))
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     # update EKF
-    ekf_l.prediction()
+    #ekf_l.prediction()
 
     ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
@@ -206,7 +217,7 @@ def callback(data, list):
     B = right_segment[:, 1]
 
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-    ekf_r.prediction()
+    #ekf_r.prediction()
 
     # print("EKF Update:")
     ekf_r.update(m_b)
@@ -244,6 +255,8 @@ def listener():
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
     rospy.Subscriber("/camera/depth/points", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1)
+    rospy.Subscriber("/mavros/imu/data", Imu, callback_imu,
+                     [ekf_l, ekf_r], queue_size=1)
     rospy.spin()
 
 

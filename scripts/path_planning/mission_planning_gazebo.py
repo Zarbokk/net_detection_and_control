@@ -47,7 +47,7 @@ def drive_to_point(pose_des, publisher):
     send_waypoint.orientation.w = qz_90n.w
     # print(qz_90n.x,qz_90n.y,qz_90n.z,qz_90n.w)
     # 0.2 works
-    send_waypoint.thrust = thrust * np.linalg.norm(xyz - pose_des) + 0.2
+    send_waypoint.thrust = thrust * np.linalg.norm(xyz - pose_des) + 0.4
     publisher.publish(send_waypoint)
 
 

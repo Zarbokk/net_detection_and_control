@@ -1,28 +1,8 @@
 clc
 clear
-%folder_name='11_test_scaling_half_tags';
-folder_name='11_test_scaling';
-which_test='10';
-gantry_z = 0.0; % soll - 10cm 
-% scaling_x=1.05*3.1/3.1245;
-% scaling_y=1*1.6/1.52;
-% scaling_z=1;
-% bias_x=-0.12+0.018;
-% bias_y=-0.047;
-%holz to kamera line = 4.5 cm 
-scaling_x=1;
-scaling_y=1;
-scaling_z=1;
-bias_x=0;
-bias_y=0;
 
-estimated_data_raw = readmatrix(folder_name+"/"+which_test+"/estimated_pose.csv");
-gantry_data_raw = readmatrix(folder_name+"/"+which_test+"/gantry_pose.csv");
-pixracer_data_raw = readmatrix(folder_name+"/"+which_test+"/pixracer_pose.csv");
-estimated_data_raw(:,1) = estimated_data_raw(:,1) - estimated_data_raw(1,1);
-gantry_data_raw(:,1) = gantry_data_raw(:,1) - gantry_data_raw(1,1);
-pixracer_data_raw(:,1) = pixracer_data_raw(:,1) - pixracer_data_raw(1,1);
-
+estimated_data_raw = readmatrix("px4_pos.csv");
+%%
 
 [gantry_data_raw(1:5,1) - gantry_data_raw(1,1) estimated_data_raw(1:5,1) - estimated_data_raw(1,1)  pixracer_data_raw(1:5,1) - pixracer_data_raw(1,1)]
 
