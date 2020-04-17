@@ -26,11 +26,12 @@ def normalize_vector(v):
     return v
 
 
-def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker):
+def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub,
+                     publisher_marker):  # mx+b=y
     # right
-    s_v = np.asarray([[0, current_state_ekf_r[2] / current_state_ekf_r[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_r[2] - (s_v[0, 1] - 0.5) * current_state_ekf_r[1]) / current_state_ekf_r[0],
-                         s_v[0, 1] - 0.5,
+    s_v = np.asarray([[0, current_state_ekf_r[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[1,
+                         current_state_ekf_r[0]+current_state_ekf_r[1],
                          0]],
                        dtype="float32")
 
@@ -64,13 +65,11 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             i = i + 1
 
     # left
-    s_v = np.asarray([[0, current_state_ekf_l[2] / current_state_ekf_l[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[(current_state_ekf_l[2] - (s_v[0, 1] - 0.5) * current_state_ekf_l[1]) / current_state_ekf_l[0],
-                         s_v[0, 1] - 0.5,
+    s_v = np.asarray([[0, current_state_ekf_l[1], 0]], dtype="float32")
+    r_v_1 = np.asarray([[1,
+                         current_state_ekf_l[0]+current_state_ekf_l[1],
                          0]],
                        dtype="float32")
-
-    r_v_2 = np.asarray([[0, 0, 1]], dtype="float32")
     r_v_1 = r_v_1 - s_v
     r_v_2 = normalize_vector(r_v_2)
     r_v_1 = normalize_vector(r_v_1)
@@ -147,7 +146,7 @@ def callback(data, list):
     points[:, 1] = -pc['z'].flatten()
     points[:, 2] = pc['y'].flatten()
     # print(points.shape)
-    points = points[::1, :]
+    points = points[::3, :]
     # print(points.shape)
     points = np.float32(points)
     points = points[points[:, 1] < 5]
@@ -158,9 +157,9 @@ def callback(data, list):
     ret, label, center = cv2.kmeans(points, K, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
 
     best_match = np.argmin(abs(center[:, 1] - 1))
-    A = points[label.ravel() == best_match]
+    A = points#[label.ravel() == best_match]
 
-    A = A[::11, :]
+    A = A[::2, :]
 
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
@@ -188,16 +187,29 @@ def callback(data, list):
     right_segment = np.asarray(right_segment)
     print("right_segment", right_segment.shape)
 
+    A = np.ones((left_segment.shape[0], 2))
+    A[:, 0] = left_segment[:, 0]
+    B = left_segment[:, 1]
+
+    # print("A", A.shape)
+    # print("B", B.shape)
+    # print("inverse:", np.linalg.inv(np.matmul(np.transpose(A), A)))
+    m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     # update EKF
     ekf_l.prediction()
 
-    ekf_l.update(left_segment)
+    ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
+    A = np.ones((right_segment.shape[0], 2))
+    A[:, 0] = right_segment[:, 0]
+    B = right_segment[:, 1]
+
+    m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     ekf_r.prediction()
 
     # print("EKF Update:")
-    ekf_r.update(right_segment)
+    ekf_r.update(m_b)
     current_state_ekf_r = ekf_r.get_x_est()
 
     rviz = True
@@ -212,11 +224,11 @@ def callback(data, list):
     # msg.d1 = current_state_ekf_r[3]
     msg.n1_x = current_state_ekf_r[0]
     msg.n1_y = current_state_ekf_r[1]
-    msg.n1_z = current_state_ekf_r[2]
+    # msg.n1_z = current_state_ekf_r[2]
     # msg.d2 = current_state_ekf_l[3]
     msg.n2_x = current_state_ekf_l[0]
     msg.n2_y = current_state_ekf_l[1]
-    msg.n2_z = current_state_ekf_l[2]
+    # msg.n2_z = current_state_ekf_l[2]
     publisher_plane.publish(msg)
 
     rate.sleep()
@@ -224,7 +236,7 @@ def callback(data, list):
 
 def listener():
     rospy.init_node('publisher', anonymous=True)
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(20)
     ekf_l = ekf_class.ExtendedKalmanFilter()
     ekf_r = ekf_class.ExtendedKalmanFilter()
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
