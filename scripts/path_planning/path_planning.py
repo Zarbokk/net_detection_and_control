@@ -64,7 +64,7 @@ class PathPlanning(object):
         r_v_2 = self.normalize_vector(r_v_2)
         r_v_1 = self.normalize_vector(r_v_1)
         #print("r_v_1", r_v_1)
-        point_one = s_v + 1 * r_v_1 + 1.5 * self.normalize_vector(
+        point_one = s_v + 1 * r_v_1 + 0.8 * self.normalize_vector(
             np.cross(r_v_2, r_v_1))  # in 1 meter distance and 1.5 meter distance to net
         #print("point_one", point_one)
         y_max = point_one[0, 1]
@@ -92,7 +92,7 @@ class PathPlanning(object):
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
             axis=[1, 0, 0], angle=roll)
 
-        thrust = 0.4
+        thrust = 0.5
         send_waypoint = AttitudeTarget()
         send_waypoint.type_mask = 0
         send_waypoint.orientation.x = qz_90n.x

@@ -17,13 +17,13 @@ class ExtendedKalmanFilter(object):
         self.__p_mat = self.__p_mat_0
         # process noise
         self.__sig_w1 = 0.05
-        self.__sig_w2 = 0.05
+        self.__sig_w2 = 0.08
         self.__q_mat = np.array(np.diag([self.__sig_w1 ** 2,
                                          self.__sig_w2 ** 2])) * 0.5
 
         # measurement noise
         # --> see measurement_covariance_model
-        self.__sig_r = 2
+        self.__sig_r = 1.0
         self.__r_mat = np.array(np.diag([self.__sig_r ** 2,
                                          self.__sig_r ** 2]))
 
