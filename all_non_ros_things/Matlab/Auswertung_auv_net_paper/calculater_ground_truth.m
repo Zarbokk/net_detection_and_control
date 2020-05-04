@@ -13,16 +13,16 @@ time=data_raw(:,5);
 %% read in data of cylinder
 %cylinder=readObj("World_with_cylinder_net.obj");
 cylinder=readObj("World_with_oval_complicated_net.obj");
-position_net_x=cylinder.v(:,1);
-position_net_y=cylinder.v(:,3);
+position_net_x_2=cylinder.v(:,1);
+position_net_y_2=cylinder.v(:,3);
 
 
 %% calculation error 
 distance_to_net=ones(size(data_raw,1),2);
 
 
- position_net_x=interp(position_net_x,10);
- position_net_y=interp(position_net_y,10);
+ position_net_x=interp(position_net_x_2,10);
+ position_net_y=interp(position_net_y_2,10);
 for i = 1:size(data_raw,1)
     distance_to_net(i,1)=min(sqrt((x(i)-position_net_x).*(x(i)-position_net_x)+(y(i)-position_net_y).*(y(i)-position_net_y)));
 end
@@ -32,15 +32,18 @@ end
 f1=figure(1);
 set(gcf,'Position',[100 100 500 300])
 hold on 
-plot(x, y,'LineWidth',1.5)
+%plot(x, y,'LineWidth',1.5)
+scatter(x, y,2,distance_to_net(:,1),'filled')
+c = colorbar;
+c.Label.String = 'Distance to net';
 %plot(position_net_x,position_net_y)
-fill(position_net_x, position_net_y,'g')
+fill(position_net_x_2, position_net_y_2,'g')
 xlabel('x-axis in m','interpreter','latex')
 ylabel('y-axis in m','interpreter','latex')
 axis([-6 8 -4 4])
 grid on
 %axis equal
-legend({'Position \muAUV','Aquaculture Net'},'FontSize',9,'Location','northeast')
+legend({'\muAUV'},'FontSize',9,'Location','northeast')
 hold off
 print(f1,'net_with_position.pdf','-dpdf','-r0')
 system('pdfcrop net_with_position.pdf net_with_position.pdf');
