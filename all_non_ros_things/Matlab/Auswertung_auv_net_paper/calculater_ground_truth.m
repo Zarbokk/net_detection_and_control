@@ -30,19 +30,24 @@ end
 
 %%
 f1=figure(1);
-set(gcf,'Position',[100 100 500 300])
+set(gcf,'Position',[100 100 500 180])
 hold on 
 %plot(x, y,'LineWidth',1.5)
 scatter(x, y,2,distance_to_net(:,1),'filled')
 c = colorbar;
-c.Label.String = 'Distance to net';
+c.Label.String = 'AUV-Distance to Structure in [m]';
+
+
 %plot(position_net_x,position_net_y)
-fill(position_net_x_2, position_net_y_2,'g')
+fill(position_net_x_2, position_net_y_2,[0.7 0.7 0.7])
 xlabel('x-axis in m','interpreter','latex')
 ylabel('y-axis in m','interpreter','latex')
 axis([-6 8 -4 4])
 grid on
 %axis equal
+txt = text(-3, 0, ("Underwater Structure"),'Interpreter','latex');
+txt.FontSize = 11;
+
 legend({'\muAUV'},'FontSize',9,'Location','northeast')
 hold off
 print(f1,'net_with_position.pdf','-dpdf','-r0')
