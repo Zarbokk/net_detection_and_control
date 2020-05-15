@@ -194,9 +194,9 @@ def callback(data, list):
         else:
             right_segment.append([x, y, z])
     left_segment = np.asarray(left_segment)
-    print("left_segment", left_segment.shape)
+    #print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
-    print("right_segment", right_segment.shape)
+    #print("right_segment", right_segment.shape)
 
     A = np.ones((left_segment.shape[0], 2))
     A[:, 0] = left_segment[:, 0]
@@ -226,8 +226,8 @@ def callback(data, list):
     rviz = True
     if rviz:
         printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker)
-        print("current_state_ekf_r", current_state_ekf_r)
-        print("current_state_ekf_l", current_state_ekf_l)
+        #print("current_state_ekf_r", current_state_ekf_r)
+        #print("current_state_ekf_l", current_state_ekf_l)
 
     msg = ekf_data()
     msg.header.frame_id = "base_link"
