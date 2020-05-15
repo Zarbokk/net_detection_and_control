@@ -8,12 +8,12 @@ from visualization_msgs.msg import Marker, MarkerArray
 import cv2
 import rospy
 from sensor_msgs.msg import Imu
-from matplotlib import pyplot as plt
-from mpl_toolkits.mplot3d import axes3d, Axes3D
+#from matplotlib import pyplot as plt
+#from mpl_toolkits.mplot3d import axes3d, Axes3D
 import numpy as np
-import pyrealsense2 as rs
+#import pyrealsense2 as rs
 import ros_numpy
-from sklearn.cluster import DBSCAN
+#from sklearn.cluster import DBSCAN
 import struct
 from std_msgs.msg import Header
 import ekf_class
