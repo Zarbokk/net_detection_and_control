@@ -18,7 +18,7 @@ import struct
 from std_msgs.msg import Header
 import ekf_class
 from net_detection_and_control.msg import ekf_data
-
+import time
 
 def normalize_vector(v):
     norm = np.linalg.norm(v)
@@ -149,8 +149,12 @@ def callback_imu(msg, tmp_list):
 
 def callback(data, list):
     pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
-
+    start_time = time.time()
+    print("data.header",data.header)
+    print("current_time",rospy.Time.now())
     pc = ros_numpy.numpify(data)
+
+
     points = np.zeros((pc.shape[0] * pc.shape[1], 3))
     # remap from camera coordinate system to base_link
     points[:, 0] = pc['x'].flatten()
@@ -241,6 +245,8 @@ def callback(data, list):
     msg.n2_y = current_state_ekf_l[1]
     # msg.n2_z = current_state_ekf_l[2]
     publisher_plane.publish(msg)
+    elapsed_time = time.time() - start_time
+    #print("time duration",elapsed_time)
 
     rate.sleep()
 
@@ -254,7 +260,7 @@ def listener():
     publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
     rospy.Subscriber("/camera/depth/points", PointCloud2, callback,
-                     [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1)
+                     [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
     rospy.Subscriber("/mavros/imu/data", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)
     rospy.spin()
