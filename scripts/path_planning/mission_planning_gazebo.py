@@ -87,7 +87,7 @@ def main():
 
     rospy.Subscriber("/mavros/local_position/pose_NED", PoseStamped, callback, queue_size=1)
     rospy.Subscriber("/mavros/imu/data", Imu, planning_class.callback_imu, queue_size=1)
-    rospy.Subscriber("/barometer", PoseStamped, planning_class.callback_barometer, queue_size=1)
+    rospy.Subscriber("/gazebo/barometer", PoseStamped, planning_class.callback_barometer, queue_size=1)
 
     move_away_position = np.asarray([3, 4, 0])
     move_away_orientation = np.asarray([np.pi, 0, 0])  # y p r
