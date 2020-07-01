@@ -43,7 +43,7 @@ def on_new_point_cloud(data, pub):
 
     tree = p.make_kdtree()
     clustering = p.make_EuclideanClusterExtraction()
-    clustering.set_ClusterTolerance(0.1)
+    clustering.set_ClusterTolerance(0.15)
     clustering.set_MinClusterSize(100)
     clustering.set_MaxClusterSize(250000)
     clustering.set_SearchMethod(tree)
@@ -118,7 +118,6 @@ def on_new_point_cloud(data, pub):
     rate.sleep()
 
 
-# reference : http://robonchu.hatenablog.com/entry/2017/09/20/234640
 def main():
     # rospy.Subscriber("/kinect2/sd/points", PointCloud2, on_new_point_cloud)
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
