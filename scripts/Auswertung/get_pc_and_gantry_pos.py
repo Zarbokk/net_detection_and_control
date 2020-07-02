@@ -60,6 +60,7 @@ def shutdown_hook():
     print("np.asarray(list_point_cloud, dtype=np.float32)", np.asarray(list_point_cloud, dtype=np.float32).shape)
     np.savetxt("point_cloud.csv", np.asarray(list_point_cloud, dtype=np.float32), delimiter=",")
     np.savetxt("gantry_pos.csv", np.asarray(list_pos_gantry, dtype=np.float32), delimiter=",")
+    print("saved")
 
 
 def listener():
