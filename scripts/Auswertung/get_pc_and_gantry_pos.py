@@ -10,12 +10,13 @@ import struct
 list_point_cloud = list()
 list_pos_gantry = list()
 k = 0
+mod_value = 5
 current_gantry_pos_x = 0
 current_gantry_pos_y = 0
 current_gantry_pos_z = 0
 
 def callback(data):
-    global list_point_cloud, k, list_pos_gantry, current_gantry_pos_x, current_gantry_pos_y, current_gantry_pos_z
+    global list_point_cloud, k, list_pos_gantry, current_gantry_pos_x, current_gantry_pos_y, current_gantry_pos_z,mod_value
     pc = ros_numpy.numpify(data)
     points = np.zeros((pc.shape[0], 4))
     # remap from camera coordinate system to base_link
@@ -39,10 +40,10 @@ def callback(data):
         r, g, b, a = struct.unpack('BBBB', points[i, 3])
         # print("r", r, g, b, a)
         pt = [x, y, z, r, g, b, a, k]
-        if k % 15 == 0:
+        if k % mod_value == 0:
             list_point_cloud.append(pt)
     print(len(list_point_cloud))
-    if k % 15 == 0:
+    if k % mod_value == 0:
         list_pos_gantry.append([current_gantry_pos_x, current_gantry_pos_y, current_gantry_pos_z, k])
     k = k + 1
     print("k", k)

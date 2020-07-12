@@ -21,8 +21,8 @@ def on_new_point_cloud(data, pub):
     points = np.zeros((pc.shape[0], 4))
     # remap from camera coordinate system to base_link
     points[:, 0] = pc['z'].flatten()
-    points[:, 1] = pc['x'].flatten()
-    points[:, 2] = pc['y'].flatten()
+    points[:, 1] = -pc['x'].flatten()
+    points[:, 2] = -pc['y'].flatten()
     points[:, 3] = pc['rgb'].flatten()
     points = np.float32(points)
 
@@ -77,9 +77,10 @@ def on_new_point_cloud(data, pub):
     first_cluster.from_list(cluster[index_pointcloud])
     np_cloud = np.asarray(first_cluster)
     print("np_cloud",np_cloud.shape)
-    for i in range(np_cloud.shape[0]):
-        change = -0.4727*np_cloud[i,1]**2 + 0.0769 * np_cloud[i,2]**2
-        np_cloud[i, 0] = np_cloud[i, 0] - change
+    #for i in range(np_cloud.shape[0]):
+    #    #change = -0.4727*np_cloud[i,1]**2 + 0.0769 * np_cloud[i,2]**2
+    #    change = -0.25 * np_cloud[i, 1] ** 2 + 0.1769 * np_cloud[i, 2] ** 2
+    #    np_cloud[i, 0] = np_cloud[i, 0] - change
 
 
     points = np.asarray(np_cloud)
@@ -89,7 +90,8 @@ def on_new_point_cloud(data, pub):
     list_points = []
 
     for i in range(points.shape[0]):
-        x = points[i, 0]
+        change = -0.25 * points[i, 1] ** 2 + 0.1769 * points[i, 2] ** 2
+        x = points[i, 0] - change
         y = points[i, 1]
         z = points[i, 2]
         # r, g, b, a = struct.unpack('BBBB', a[i, 3])
@@ -111,7 +113,7 @@ def on_new_point_cloud(data, pub):
     # print points
 
     header = Header()
-    header.frame_id = data.header.frame_id
+    header.frame_id = "d435i_link"
     publish_pc = pc2.create_cloud(header, fields, list_points)
     pub.publish(publish_pc)
 
