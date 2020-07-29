@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  pcl_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -113,6 +114,7 @@ catkin_package(
    CATKIN_DEPENDS message_runtime
 )
 
+
 ###########
 ## Build ##
 ###########
@@ -138,7 +140,7 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/localisation_node.cpp)
-
+add_executable(example src/example.cpp)
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -153,7 +155,7 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-
+target_link_libraries(example ${catkin_LIBRARIES} -lpcl_filters )
 #############
 ## Install ##
 #############
