@@ -16,12 +16,14 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
 // Container for original & filtered data
     Eigen::Matrix4f transform_1 = Eigen::Matrix4f::Identity();
-    transform_1 (0,0) = 0;
-    transform_1 (1,1) = 0;
-    transform_1 (2,2) = 0;
-    transform_1 (0,2) = 1;
-    transform_1 (1,0) = -1;
-    transform_1 (2,1) = -1;
+    //transform_1 (0,0) = 0;
+    //transform_1 (1,1) = 0;
+    //transform_1 (2,2) = 0;
+    //transform_1 (0,2) = 1;
+    //transform_1 (1,0) = -1;
+    //transform_1 (2,1) = -1;
+
+
     //transform_1 (0,1) = 0
     //transform_1 (1,0) = sin (theta);
     //transform_1 (1,1) = std::cos (theta);
@@ -57,8 +59,8 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // Convert to ROS data type
 
     pcl::CropBox<pcl::PointXYZRGBA> boxFilter;
-    boxFilter.setMin(Eigen::Vector4f(0, 0, 0, 1.0));
-    boxFilter.setMax(Eigen::Vector4f(2, 2, 2, 1.0));
+    boxFilter.setMin(Eigen::Vector4f(-1, -0.3, 0, 1.0));
+    boxFilter.setMax(Eigen::Vector4f(1, 0.3, 4, 1.0));
     boxFilter.setInputCloud(transformed_cloud);
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_box_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);

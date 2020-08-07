@@ -39,6 +39,9 @@ x0_optimated = lsqnonlin(fun,x0)
 x0_optimated(1)=x0_optimated(1);
 x0_optimated(2)=x0_optimated(2)*0;
 %%
+%x0_optimated =
+
+%    0.0481   -0.1396   -1.2042
 x_plotting=linspace(-0.5,0.5);
 z_plotting=linspace(-0.5,0.5);
 y_plotting=x0_optimated(1)*x_plotting.^2+x0_optimated(2)*z_plotting.^2+x0_optimated(3);

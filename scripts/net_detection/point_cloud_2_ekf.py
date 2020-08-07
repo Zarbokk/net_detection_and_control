@@ -30,10 +30,10 @@ def normalize_vector(v):
 def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub,
                      publisher_marker):  # mx+b=y
     # right
-    s_v = np.asarray([[0, current_state_ekf_r[1], 0]], dtype="float32")
-    r_v_1 = np.asarray([[1,
+    s_v = np.asarray([[0, 0, current_state_ekf_r[1]]], dtype="float32")
+    r_v_1 = np.asarray([[0,
                          current_state_ekf_r[0]+current_state_ekf_r[1],
-                         0]],
+                         1]],
                        dtype="float32")
 
     r_v_2 = np.asarray([[0, 0, 1]], dtype="float32")
@@ -48,7 +48,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
             marker = Marker()
-            marker.header.frame_id = "base_link"
+            marker.header.frame_id = "d435i_depth_optical_frame"
             marker.id = i
             marker.type = marker.SPHERE
             marker.action = marker.ADD
@@ -79,7 +79,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
             marker = Marker()
-            marker.header.frame_id = "base_link"
+            marker.header.frame_id = "d435i_depth_optical_frame"
             marker.id = i
             marker.type = marker.SPHERE
             marker.action = marker.ADD
@@ -132,7 +132,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
     # print points
 
     header = Header()
-    header.frame_id = "base_link"
+    header.frame_id = "d435i_depth_optical_frame"
     pc2 = point_cloud2.create_cloud(header, fields, points)
     pub.publish(pc2)
 
@@ -150,22 +150,19 @@ def callback_imu(msg, tmp_list):
 def callback(data, list):
     pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
     start_time = time.time()
-    print("data.header",data.header)
-    print("current_time",rospy.Time.now())
     pc = ros_numpy.numpify(data)
 
-
-    points = np.zeros((pc.shape[0] * pc.shape[1], 3))
+    points = np.zeros((pc.shape[0], 3))
     # remap from camera coordinate system to base_link
     points[:, 0] = pc['x'].flatten()
-    points[:, 1] = -pc['z'].flatten()
-    points[:, 2] = pc['y'].flatten()
+    points[:, 1] = pc['y'].flatten()
+    points[:, 2] = pc['z'].flatten()
     # print(points.shape)
     points = points[::3, :]
     # print(points.shape)
     points = np.float32(points)
-    points = points[points[:, 1] < 5]
-    points = points[points[:, 1] > -5]
+    #points = points[points[:, 1] < 5]
+    #points = points[points[:, 1] > -5]
 
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
     K = 1
@@ -185,7 +182,7 @@ def callback(data, list):
     median_center[1] = center[best_match, 1]
     median_center[2] = center[best_match, 2]
     # print("median_center", median_center)
-    current_mean_angle = np.arctan2(median_center[1], median_center[0])
+    current_mean_angle = np.arctan2(median_center[2], median_center[0])
     # print("current_mean_angle", current_mean_angle)
     left_segment = []
     right_segment = []
@@ -193,7 +190,7 @@ def callback(data, list):
         x = A[i, 0]
         y = A[i, 1]
         z = A[i, 2]
-        if np.arctan2(y, x) > current_mean_angle:
+        if np.arctan2(z, x) > current_mean_angle:
             left_segment.append([x, y, z])
         else:
             right_segment.append([x, y, z])
@@ -204,7 +201,7 @@ def callback(data, list):
 
     A = np.ones((left_segment.shape[0], 2))
     A[:, 0] = left_segment[:, 0]
-    B = left_segment[:, 1]
+    B = left_segment[:, 2]
 
     # print("A", A.shape)
     # print("B", B.shape)
@@ -212,13 +209,13 @@ def callback(data, list):
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     # update EKF
     #ekf_l.prediction()
-
+    # print("m_b", m_b)
     ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
     A = np.ones((right_segment.shape[0], 2))
     A[:, 0] = right_segment[:, 0]
-    B = right_segment[:, 1]
+    B = right_segment[:, 2]
 
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     #ekf_r.prediction()
@@ -234,7 +231,7 @@ def callback(data, list):
         #print("current_state_ekf_l", current_state_ekf_l)
 
     msg = ekf_data()
-    msg.header.frame_id = "base_link"
+    msg.header.frame_id = "d435i_depth_optical_frame"
     msg.header.stamp = rospy.Time.now()
     # msg.d1 = current_state_ekf_r[3]
     msg.n1_x = current_state_ekf_r[0]
@@ -259,9 +256,9 @@ def listener():
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
     publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
-    rospy.Subscriber("/camera/depth/points", PointCloud2, callback,
+    rospy.Subscriber("/d435i/depth/color/points", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
-    rospy.Subscriber("/mavros/imu/data", Imu, callback_imu,
+    rospy.Subscriber("/d435i/gyro/sample", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)
     rospy.spin()
 

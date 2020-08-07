@@ -21,8 +21,8 @@ def callback(data):
     points = np.zeros((pc.shape[0], 4))
     # remap from camera coordinate system to base_link
     points[:, 0] = pc['x'].flatten()
-    points[:, 1] = -pc['z'].flatten()
-    points[:, 2] = pc['y'].flatten()
+    points[:, 1] = pc['y'].flatten()
+    points[:, 2] = pc['z'].flatten()
     points[:, 3] = pc['rgb'].flatten()
     # print(points.shape)
     points = points[::3, :]
