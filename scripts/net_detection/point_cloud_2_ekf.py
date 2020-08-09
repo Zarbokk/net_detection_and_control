@@ -31,12 +31,12 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
                      publisher_marker):  # mx+b=y
     # right
     s_v = np.asarray([[0, 0, current_state_ekf_r[1]]], dtype="float32")
-    r_v_1 = np.asarray([[0,
-                         current_state_ekf_r[0]+current_state_ekf_r[1],
-                         1]],
+    r_v_1 = np.asarray([[1,
+                         0,
+                         current_state_ekf_r[0]+current_state_ekf_r[1]]],
                        dtype="float32")
 
-    r_v_2 = np.asarray([[0, 0, 1]], dtype="float32")
+    r_v_2 = np.asarray([[0, 1, 0]], dtype="float32")
     r_v_1 = r_v_1 - s_v
     r_v_2 = normalize_vector(r_v_2)
     r_v_1 = normalize_vector(r_v_1)
@@ -66,10 +66,10 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
             i = i + 1
 
     # left
-    s_v = np.asarray([[0, current_state_ekf_l[1], 0]], dtype="float32")
+    s_v = np.asarray([[0, 0, current_state_ekf_l[1]]], dtype="float32")
     r_v_1 = np.asarray([[1,
-                         current_state_ekf_l[0]+current_state_ekf_l[1],
-                         0]],
+                         0,
+                         current_state_ekf_l[0]+current_state_ekf_l[1]]],
                        dtype="float32")
     r_v_1 = r_v_1 - s_v
     r_v_2 = normalize_vector(r_v_2)
@@ -181,7 +181,7 @@ def callback(data, list):
     median_center[0] = center[best_match, 0]
     median_center[1] = center[best_match, 1]
     median_center[2] = center[best_match, 2]
-    # print("median_center", median_center)
+    print("median_center", median_center)
     current_mean_angle = np.arctan2(median_center[2], median_center[0])
     # print("current_mean_angle", current_mean_angle)
     left_segment = []
@@ -190,10 +190,11 @@ def callback(data, list):
         x = A[i, 0]
         y = A[i, 1]
         z = A[i, 2]
-        if np.arctan2(z, x) > current_mean_angle:
-            left_segment.append([x, y, z])
-        else:
-            right_segment.append([x, y, z])
+        if np.linalg.norm([x-median_center[0],y-median_center[1],z-median_center[2]])<1:
+            if np.arctan2(z, x) > current_mean_angle:
+                left_segment.append([x, y, z])
+            else:
+                right_segment.append([x, y, z])
     left_segment = np.asarray(left_segment)
     #print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
@@ -209,7 +210,7 @@ def callback(data, list):
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     # update EKF
     #ekf_l.prediction()
-    # print("m_b", m_b)
+    print("m_b", m_b)
     ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
