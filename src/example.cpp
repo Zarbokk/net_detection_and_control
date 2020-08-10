@@ -10,6 +10,7 @@
 #include <pcl/filters/crop_box.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/segmentation/extract_clusters.h>
 ros::Publisher pub;
 
 void
@@ -61,7 +62,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
     pcl::CropBox<pcl::PointXYZRGBA> boxFilter;
     boxFilter.setMin(Eigen::Vector4f(-1, -0.3, 0, 1.0));
-    boxFilter.setMax(Eigen::Vector4f(1, 0.10, 4, 1.0));
+    boxFilter.setMax(Eigen::Vector4f(1, 0.30, 4, 1.0));
     boxFilter.setInputCloud(transformed_cloud);
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_box_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -77,6 +78,20 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     sor.filter (*statistical_ouitlier_filtered);
 
 
+
+    pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBA>);
+    tree->setInputCloud (statistical_ouitlier_filtered);
+
+
+    pcl::EuclideanClusterExtraction<pcl::PointXYZRGBA> ec;
+    std::vector<pcl::PointIndices> cluster_indices;
+
+    ec.setClusterTolerance (0.02); // 2cm
+    ec.setMinClusterSize (100);
+    ec.setMaxClusterSize (25000);
+    ec.setSearchMethod (tree);
+    ec.setInputCloud (statistical_ouitlier_filtered);
+    ec.extract (cluster_indices);
 
 
 

@@ -43,7 +43,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
 
     markerArray = MarkerArray()
     i = 1
-    for mu in np.linspace(-1, 1, 10):
+    for mu in np.linspace(0, 1, 10):
         for theta in np.linspace(-1, 1, 10):
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
@@ -74,7 +74,7 @@ def printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_s
     r_v_1 = r_v_1 - s_v
     r_v_2 = normalize_vector(r_v_2)
     r_v_1 = normalize_vector(r_v_1)
-    for mu in np.linspace(-1, 1, 10):
+    for mu in np.linspace(-1, 0, 10):
         for theta in np.linspace(-1, 1, 10):
             current_point = np.transpose(s_v) + mu * np.transpose(r_v_1) + theta * np.transpose(r_v_2)
             r = 0.02
@@ -257,7 +257,7 @@ def listener():
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
     publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
-    rospy.Subscriber("/d435i/depth/color/points", PointCloud2, callback,
+    rospy.Subscriber("/output", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
     rospy.Subscriber("/d435i/gyro/sample", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)
