@@ -6,8 +6,9 @@ planes_array = readmatrix("planes_all.csv");
 
 %%
 k=10;
+f1=figure(1);
 hold on
-
+set(gcf,'Position',[100 100 500 200])
 for i = 1:round(size(planes_array,1)*0.24)
     if mod(i,k)==0
         
@@ -37,8 +38,6 @@ for i = 1:round(size(planes_array,1)*0.24)
         plot(y_gantry,x_gantry, 'o','Color',[1-i/size(planes_array,1)/0.4 i/size(planes_array,1)/0.4 0])
         i/size(planes_array,1)/0.3
     end
-    
-    
 end
 %axis equal
 %%
@@ -51,4 +50,11 @@ p5=[3.68;-0.055+1.41];
 ground_truth=[p0(1) p1(1) p2(1) p3(1) p4(1) p5(1);p0(2) p1(2) p2(2) p3(2) p4(2) p5(2)]';
 
 plot(ground_truth(:,2),ground_truth(:,1))
-axis equal
+xlabel('x-axis in m','interpreter','latex')
+ylabel('y-axis in m','interpreter','latex')
+
+axis([-0.5 2 1.4 4])
+grid on
+
+print(f1,'figure_exp_2.pdf','-dpdf','-r0')
+system('pdfcrop figure_exp_2.pdf figure_exp_2.pdf');

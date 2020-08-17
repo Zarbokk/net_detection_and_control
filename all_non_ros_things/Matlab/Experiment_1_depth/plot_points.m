@@ -25,12 +25,16 @@ for i = 1:size(current_cloud,1)
     current_cloud(i,3)=current_cloud(i,3)-change;
     current_cloud(i,1)=current_cloud(i,1);
 end
-hold on
-%plot3(current_cloud(:,1),current_cloud(:,2),current_cloud(:,3), 'o')
-plot(current_cloud(:,1)+current_pos(2),current_cloud(:,3)+current_pos(1), 'o')
 
-xlabel('X')
-ylabel('Z')
+
+f1=figure(1);
+hold on
+set(gcf,'Position',[100 100 500 200])
+
+%plot3(current_cloud(:,1),current_cloud(:,2),current_cloud(:,3), 'o')
+plot(current_cloud(:,1)+current_pos(2),current_cloud(:,3)+current_pos(1), '.')
+
+
 %zlabel('Z')
 axis equal
 plot(current_pos(2),current_pos(1), 'o')
@@ -46,4 +50,17 @@ p5=[3.68;-0.055+1.41];
 ground_truth=[p0(1) p1(1) p2(1) p3(1) p4(1) p5(1);p0(2) p1(2) p2(2) p3(2) p4(2) p5(2)]';
 
 plot(ground_truth(:,2),ground_truth(:,1))
-axis equal
+%axis equal
+%%
+%set(gca, 'YDir','reverse')
+xlabel('x-axis in m','interpreter','latex')
+ylabel('y-axis in m','interpreter','latex')
+
+axis([-0.5 2 1.4 4])
+grid on
+
+print(f1,'figure_exp_1.pdf','-dpdf','-r0')
+system('pdfcrop figure_exp_1.pdf figure_exp_1.pdf');
+
+
+
