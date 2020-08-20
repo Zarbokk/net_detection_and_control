@@ -9,6 +9,10 @@
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/common/transforms.h>
+#include <pcl/filters/statistical_outlier_removal.h>
+#include <pcl/segmentation/extract_clusters.h>
+#include <pcl/kdtree/kdtree.h>
+#include <pcl/segmentation/sac_segmentation.h>
 ros::Publisher pub;
 
 void
@@ -60,20 +64,40 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
     pcl::CropBox<pcl::PointXYZRGBA> boxFilter;
     boxFilter.setMin(Eigen::Vector4f(-1, -0.3, 0, 1.0));
-    boxFilter.setMax(Eigen::Vector4f(1, 0.3, 4, 1.0));
+    boxFilter.setMax(Eigen::Vector4f(1, 0.30, 4, 1.0));
     boxFilter.setInputCloud(transformed_cloud);
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_box_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
 
     boxFilter.filter(*cloud_box_filtered);
 
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZRGBA> sor;
+    sor.setInputCloud (cloud_box_filtered);
+    sor.setMeanK (50);
+    sor.setStddevMulThresh (0.5);
+
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr statistical_ouitlier_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
+    sor.filter (*statistical_ouitlier_filtered);
 
 
 
+    //pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBA>);
+    //tree->setInputCloud (statistical_ouitlier_filtered);
+
+
+    //pcl::EuclideanClusterExtraction<pcl::PointXYZRGBA> ec;
+    //std::vector<pcl::PointIndices> cluster_indices;
+
+    //ec.setClusterTolerance (0.15); // 15cm
+    //ec.setMinClusterSize (100);
+    //ec.setMaxClusterSize (25000);
+    //ec.setSearchMethod (tree);
+    //ec.setInputCloud (statistical_ouitlier_filtered);
+    //ec.extract (cluster_indices);
 
 
 
-    pcl::toPCLPointCloud2 (*cloud_box_filtered, *cloud_transformed);
+    pcl::toPCLPointCloud2 (*statistical_ouitlier_filtered, *cloud_transformed);
     pcl::PCLPointCloud2ConstPtr cloudPtr(cloud_transformed);
     sensor_msgs::PointCloud2 output;
 

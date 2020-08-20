@@ -3,7 +3,7 @@ import rospy
 
 
 class ExtendedKalmanFilter(object):
-    def __init__(self, x0=[0, -1]):  # m b  bei der gleichung point*n=d wobei n=[x y]'
+    def __init__(self, x0=[0, 1]):  # m b  bei der gleichung point*n=d wobei n=[x y]'
         number_of_states = 2
         """ initialize EKF """
         self.__x_est_0 = np.array([[x0[0]], [x0[1]]]).reshape((number_of_states, 1))
