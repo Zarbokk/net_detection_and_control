@@ -159,7 +159,7 @@ def callback(data, list):
     points[:, 2] = pc['z'].flatten()
     # print(points.shape)
     points = points[::3, :]
-    print(points.shape)
+    print("points.shape",points.shape)
     points = np.float32(points)
     #points = points[points[:, 1] < 5]
     #points = points[points[:, 1] > -5]
