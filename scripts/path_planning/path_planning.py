@@ -119,7 +119,7 @@ class PathPlanning(object):
             for x in np.linspace(0, x_max, 20):
                 r = 0.1
                 marker = Marker()
-                marker.header.frame_id = "base_link"
+                marker.header.frame_id = "d435i_depth_optical_frame"
                 marker.id = i
                 marker.type = marker.SPHERE
                 marker.action = marker.ADD
