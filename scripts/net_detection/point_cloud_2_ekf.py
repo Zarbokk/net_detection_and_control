@@ -1,4 +1,4 @@
-# !/usr/bin/env python
+#!/usr/bin/env python
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import PointStamped
 from sensor_msgs.msg import Image, PointCloud2, PointField  # CompressedImage  # Image
