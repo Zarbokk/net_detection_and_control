@@ -1,0 +1,4 @@
+<launch>
+      <node pkg="net_detection_and_control" type="driving_along_sth.py" name="driving_along_sth" >
+      </node>
+</launch>

@@ -257,7 +257,7 @@ def listener():
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
     publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
-    rospy.Subscriber("/output", PointCloud2, callback,
+    rospy.Subscriber("output", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
     rospy.Subscriber("/d435i/gyro/sample", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)

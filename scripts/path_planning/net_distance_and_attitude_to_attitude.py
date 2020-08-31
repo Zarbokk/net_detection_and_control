@@ -134,7 +134,7 @@ def pathplanning():
 def main():
     rospy.init_node('path_planning', anonymous=True)
     rate = rospy.Rate(30)
-    rospy.Subscriber("/mavros/imu/data", Imu, callback_imu, queue_size=1)
+    rospy.Subscriber("/uuv00/mavros/imu/data", Imu, callback_imu, queue_size=1)
     rospy.Subscriber("/barometer", PoseStamped, callback_barometer, queue_size=1)
     rospy.Subscriber("/estimated_distance_to_net", PoseStamped, callback_net_distance, queue_size=1)
     while not rospy.is_shutdown():
