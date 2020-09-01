@@ -10,7 +10,7 @@ from net_detection_and_control.msg import ekf_data
 
 class PathPlanning(object):
     def __init__(self):
-        self.depth_des = 1.0
+        self.depth_des = 0.5
         # distance_to_net_des = 1.5
         self.depth = 0
         # distance_to_net = 0
@@ -44,36 +44,36 @@ class PathPlanning(object):
     def callback_net_distance(self, msg):
         # msg=Imu()
         #global net_plane_parameter
-        self.net_plane_parameter[0] = msg.n2_x
-        self.net_plane_parameter[1] = msg.n2_y
-        self.net_plane_parameter[2] = msg.n2_z
-        self.net_plane_parameter[3] = msg.d2
+        self.net_plane_parameter[0] = msg.n1_x
+        self.net_plane_parameter[1] = msg.n1_y
+        self.net_plane_parameter[2] = msg.n1_z
+        self.net_plane_parameter[3] = msg.d1
 
     def pathplanning(self,publisher_waypoint,publisher_marker):
         #global depth, net_plane_parameter, depth_des, distance_to_net_des, publisher_marker, publisher_waypoint
         # transform into real_world_coordinates
 
-        s_v = np.asarray([[0, self.net_plane_parameter[1], 0]], dtype="float32")
+        s_v = np.asarray([[0, 0, self.net_plane_parameter[1]]], dtype="float32")
         r_v_1 = np.asarray([[1,
-                             self.net_plane_parameter[0] + self.net_plane_parameter[1],
-                             0]],
+                             0,
+                             self.net_plane_parameter[0] + self.net_plane_parameter[1]]],
                            dtype="float32")
 
-        r_v_2 = np.asarray([[0, 0, 1]], dtype="float32")
+        r_v_2 = np.asarray([[0, 1, 0]], dtype="float32")
         r_v_1 = r_v_1 - s_v
         r_v_2 = self.normalize_vector(r_v_2)
         r_v_1 = self.normalize_vector(r_v_1)
         #print("r_v_1", r_v_1)
-        point_one = s_v + 1 * r_v_1 + 0.8 * self.normalize_vector(
+        point_one = s_v + 1 * r_v_1 + 0.5 * self.normalize_vector(
             np.cross(r_v_2, r_v_1))  # in 1 meter distance and 1.5 meter distance to net
         #print("point_one", point_one)
-        y_max = point_one[0, 1]
+        z_max = point_one[0, 2]
         x_max = point_one[0, 0]
-        a = np.arctan2(r_v_1[0, 1], r_v_1[0, 0])
+        a = np.arctan2(r_v_1[0, 2], r_v_1[0, 0])
         #print(a)
         d_cubic = 0
         c_cubic = a
-        b_cubic = (y_max - a * x_max) / (-2.0 / 3.0 * x_max ** 2 + x_max ** 2)
+        b_cubic = (z_max - a * x_max) / (-2.0 / 3.0 * x_max ** 2 + x_max ** 2)
         a_cubic = -2.0 * b_cubic / x_max / 3.0
 
         stammfunktion = a_cubic * x_max ** 3 + b_cubic * x_max ** 2 + c_cubic * x_max + d_cubic
@@ -130,8 +130,8 @@ class PathPlanning(object):
                 marker.color.a = 1  # transparency
                 marker.pose.orientation.w = 1.0
                 marker.pose.position.x = x  # x
-                marker.pose.position.y = a_cubic * x ** 3 + b_cubic * x ** 2 + c_cubic * x + d_cubic  # y
-                marker.pose.position.z = x / x_max * (self.depth - self.depth_des)  # z
+                marker.pose.position.y = x / x_max * (self.depth - self.depth_des)  # z
+                marker.pose.position.z = a_cubic * x ** 3 + b_cubic * x ** 2 + c_cubic * x + d_cubic  # y
                 markerArray.markers.append(marker)
                 i = i + 1
             publisher_marker.publish(markerArray)

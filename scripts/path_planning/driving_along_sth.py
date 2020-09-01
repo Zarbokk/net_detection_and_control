@@ -22,8 +22,8 @@ def main():
     publisher_marker = rospy.Publisher('path_planning', MarkerArray, queue_size=1)
     publisher_waypoint = rospy.Publisher('mavros/setpoint_raw/attitude', AttitudeTarget, queue_size=1)
 
-    rospy.Subscriber("mavros/imu/data", Imu, planning_class.callback_imu, queue_size=1)
-    rospy.Subscriber("pose_px4", PoseStamped, planning_class.callback_barometer, queue_size=1)
+    rospy.Subscriber("uuv00/mavros/imu/data", Imu, planning_class.callback_imu, queue_size=1)
+    rospy.Subscriber("uuv00/pose_px4", PoseStamped, planning_class.callback_barometer, queue_size=1)
 
 
     rospy.Subscriber("plane_to_drive_by", ekf_data, planning_class.callback_net_distance, queue_size=1)
