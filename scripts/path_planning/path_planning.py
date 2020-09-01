@@ -86,9 +86,9 @@ class PathPlanning(object):
         # print("pitch:", pitch * 180 / np.pi)
 
         # yaw=-np.pi/2
-        print("yaw:", yaw * 180 / np.pi)
+        # print("yaw:", yaw * 180 / np.pi)
         roll = 0
-        yaw = 0
+        # yaw = 0
         qz_90n = Quaternion(
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
             axis=[1, 0, 0], angle=roll)
