@@ -10,7 +10,7 @@ from net_detection_and_control.msg import ekf_data
 
 class PathPlanning(object):
     def __init__(self):
-        self.depth_des = 0.8
+        self.depth_des = 0.7
         self.distance_to_net = 1.0
         # distance_to_net_des = 1.5
         self.depth = 0
