@@ -16,8 +16,8 @@ class ExtendedKalmanFilter(object):
                                            self.__sig_x2 ** 2]))
         self.__p_mat = self.__p_mat_0
         # process noise
-        self.__sig_w1 = 0.008
-        self.__sig_w2 = 0.008
+        self.__sig_w1 = 0.02
+        self.__sig_w2 = 0.02
         self.__q_mat = np.array(np.diag([self.__sig_w1 ** 2,
                                          self.__sig_w2 ** 2])) * 0.5
 
@@ -88,8 +88,10 @@ class ExtendedKalmanFilter(object):
             delta_t = 0.02
 
         alpha = roation_z_vel * delta_t
+        print("self.__x_est[0]1",self.__x_est[0])
         self.__x_est[0] = (np.sin(alpha) + np.cos(alpha) * self.__x_est[0]) / (
                 np.cos(alpha) - np.sin(alpha) * self.__x_est[0])  # m update
+        print("self.__x_est[0]2",self.__x_est[0])
         self.__x_est[1] = self.__x_est[1] / (np.cos(alpha) - np.sin(alpha) * self.__x_est[0])  # b update
         self.__p_mat = np.matmul(self.f_jacobian(alpha), np.matmul(self.__p_mat, np.transpose(self.f_jacobian(alpha)))) + self.__q_mat
         return True
