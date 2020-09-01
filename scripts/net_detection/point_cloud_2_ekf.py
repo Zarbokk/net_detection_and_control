@@ -159,7 +159,7 @@ def callback(data, list):
     points[:, 2] = pc['z'].flatten()
     # print(points.shape)
     points = points[::3, :]
-    print("points.shape",points.shape)
+    # print("points.shape",points.shape)
     points = np.float32(points)
     #points = points[points[:, 1] < 5]
     #points = points[points[:, 1] > -5]
@@ -181,7 +181,7 @@ def callback(data, list):
     median_center[0] = center[best_match, 0]
     median_center[1] = center[best_match, 1]
     median_center[2] = center[best_match, 2]
-    print("median_center", median_center)
+    # print("median_center", median_center)
     current_mean_angle = np.arctan2(median_center[2], median_center[0])
     # print("current_mean_angle", current_mean_angle)
     left_segment = []
@@ -210,7 +210,7 @@ def callback(data, list):
     m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
     # update EKF
     #ekf_l.prediction()
-    print("m_b", m_b)
+    # print("m_b", m_b)
     ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
