@@ -93,7 +93,7 @@ class PathPlanning(object):
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
             axis=[1, 0, 0], angle=roll)
 
-        thrust = 0.3
+        thrust = 0.0
         send_waypoint = AttitudeTarget()
         send_waypoint.type_mask = 0
         send_waypoint.orientation.x = qz_90n.x
