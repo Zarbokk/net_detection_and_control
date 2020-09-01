@@ -10,7 +10,7 @@ from net_detection_and_control.msg import ekf_data
 
 class PathPlanning(object):
     def __init__(self):
-        self.depth_des = 0.5
+        self.depth_des = 0.8
         # distance_to_net_des = 1.5
         self.depth = 0
         # distance_to_net = 0
@@ -64,7 +64,7 @@ class PathPlanning(object):
         r_v_2 = self.normalize_vector(r_v_2)
         r_v_1 = self.normalize_vector(r_v_1)
         #print("r_v_1", r_v_1)
-        point_one = s_v + 1 * r_v_1 + 0.5 * self.normalize_vector(
+        point_one = s_v + 1 * r_v_1 + 1.1 * self.normalize_vector(
             np.cross(r_v_2, r_v_1))  # in 1 meter distance and 1.5 meter distance to net
         #print("point_one", point_one)
         z_max = point_one[0, 2]
@@ -78,15 +78,15 @@ class PathPlanning(object):
 
         stammfunktion = a_cubic * x_max ** 3 + b_cubic * x_max ** 2 + c_cubic * x_max + d_cubic
         pitch_gain = 1
-        pitch = pitch_gain * np.arctan((self.depth - self.depth_des) / np.sqrt(stammfunktion ** 2 + x_max ** 2))
+        pitch = pitch_gain * np.arctan((self.depth_des-self.depth) / np.sqrt(stammfunktion ** 2 + x_max ** 2))
 
         ableitung = 3.0 * a_cubic * (x_max / 2.0) ** 2 + 2.0 * b_cubic * (x_max / 2.0) + c_cubic
-        yaw = 0.5 * np.arctan(ableitung)
+        yaw = - 0.5 * np.arctan(ableitung)
         # pitch = np.pi / 4
-        # print("pitch:", pitch * 180 / np.pi)
+        print("pitch:", pitch * 180 / np.pi)
 
         # yaw=-np.pi/2
-        # print("yaw:", yaw * 180 / np.pi)
+        print("yaw:", yaw * 180 / np.pi)
         roll = 0
         qz_90n = Quaternion(
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
@@ -130,7 +130,7 @@ class PathPlanning(object):
                 marker.color.a = 1  # transparency
                 marker.pose.orientation.w = 1.0
                 marker.pose.position.x = x  # x
-                marker.pose.position.y = x / x_max * (self.depth - self.depth_des)  # z
+                marker.pose.position.y = x / x_max * ( self.depth_des-self.depth)  # z
                 marker.pose.position.z = a_cubic * x ** 3 + b_cubic * x ** 2 + c_cubic * x + d_cubic  # y
                 markerArray.markers.append(marker)
                 i = i + 1
