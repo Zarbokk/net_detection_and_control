@@ -16,8 +16,8 @@ class ExtendedKalmanFilter(object):
                                            self.__sig_x2 ** 2]))
         self.__p_mat = self.__p_mat_0
         # process noise
-        self.__sig_w1 = 0.02
-        self.__sig_w2 = 0.02
+        self.__sig_w1 = 0.05
+        self.__sig_w2 = 0.05
         self.__q_mat = np.array(np.diag([self.__sig_w1 ** 2,
                                          self.__sig_w2 ** 2])) * 0.5
 
