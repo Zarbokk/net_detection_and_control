@@ -83,16 +83,16 @@ class PathPlanning(object):
         ableitung = 3.0 * a_cubic * (x_max / 2.0) ** 2 + 2.0 * b_cubic * (x_max / 2.0) + c_cubic
         yaw = - 0.5 * np.arctan(ableitung)
         # pitch = np.pi / 4
-        print("pitch:", pitch * 180 / np.pi)
+        # print("pitch:", pitch * 180 / np.pi)
 
         # yaw=-np.pi/2
-        print("yaw:", yaw * 180 / np.pi)
+        # print("yaw:", yaw * 180 / np.pi)
         roll = 0
         qz_90n = Quaternion(
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
             axis=[1, 0, 0], angle=roll)
 
-        thrust = 0.1
+        thrust = 0.3
         send_waypoint = AttitudeTarget()
         send_waypoint.type_mask = 0
         send_waypoint.orientation.x = qz_90n.x
