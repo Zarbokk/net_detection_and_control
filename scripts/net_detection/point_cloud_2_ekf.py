@@ -199,42 +199,41 @@ def callback(data, list):
 
 
 
-
-
+    A=A[np.sum(np.abs(A-np.transpose(median_center))**2,axis=-1)**(1./2)<1]
     for i in range(A.shape[0]):
         x = A[i, 0]
         y = A[i, 1]
         z = A[i, 2]
 
-        if np.linalg.norm([x-median_center[0],y-median_center[1],z-median_center[2]])<1:
-            alpha_x = -5.0/180.0*np.pi
-            alpha_y= 8.0/180.0*np.pi
-            #alpha_x = 0/180*np.pi
-            #alpha_y = 0/180*np.pi
-            if np.arctan2(z, x) > current_mean_angle:
-                current_point=np.asarray([[x],[y],[z]])*1.3
-                # rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
-                # if current_point[1]>0:
-                #     alpha_x=alpha_x*-1
-                # if current_point[0]>0:
-                #     alpha_y=alpha_y*-1
-                # rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
-                # rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
-                # rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
-                # current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
-                left_segment.append([current_point[0], current_point[1], current_point[2]])
-            else:
-                current_point=np.asarray([[x],[y],[z]])*1.3
-                # rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
-                # if current_point[1]>0:
-                #     alpha_x=alpha_x*-1
-                # if current_point[0]>0:
-                #     alpha_y=alpha_y*-1
-                # rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
-                # rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
-                # rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
-                # current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
-                right_segment.append([current_point[0], current_point[1], current_point[2]])
+
+        alpha_x = -5.0/180.0*np.pi
+        alpha_y= 8.0/180.0*np.pi
+        #alpha_x = 0/180*np.pi
+        #alpha_y = 0/180*np.pi
+        if np.arctan2(z, x) > current_mean_angle:
+            current_point=np.asarray([[x],[y],[z]])*1.3
+            rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+            if current_point[1]>0:
+                alpha_x=alpha_x*-1
+            if current_point[0]>0:
+                alpha_y=alpha_y*-1
+            rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+            rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+            rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+            current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+            left_segment.append([current_point[0], current_point[1], current_point[2]])
+        else:
+            current_point=np.asarray([[x],[y],[z]])*1.3
+            rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+            if current_point[1]>0:
+                alpha_x=alpha_x*-1
+            if current_point[0]>0:
+                alpha_y=alpha_y*-1
+            rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+            rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+            rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+            current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+            right_segment.append([current_point[0], current_point[1], current_point[2]])
 
 
     t_end = time.time()
