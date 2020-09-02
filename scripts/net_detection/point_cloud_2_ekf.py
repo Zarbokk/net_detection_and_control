@@ -297,7 +297,7 @@ def listener():
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
     rospy.Subscriber("output", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
-    rospy.Subscriber("/d435i/gyro/sample", Imu, callback_imu,
+    rospy.Subscriber("/uuv00/mavros/imu/data", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)
     rospy.spin()
 
