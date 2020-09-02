@@ -176,7 +176,7 @@ def callback(data, list):
     best_match = np.argmin(abs(center[:, 1] - 1))
     A = points#[label.ravel() == best_match]
 
-    A = A[::2, :]
+    A = A[::3, :]
 
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
@@ -204,8 +204,6 @@ def callback(data, list):
         x = A[i, 0]
         y = A[i, 1]
         z = A[i, 2]
-
-
         alpha_x = -5.0/180.0*np.pi
         alpha_y= 8.0/180.0*np.pi
         #alpha_x = 0/180*np.pi
