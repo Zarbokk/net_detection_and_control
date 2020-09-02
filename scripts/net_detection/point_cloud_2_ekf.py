@@ -194,7 +194,7 @@ def callback(data, list):
 
 
     t_end = time.time()
-    print("load+kmeans",t_end-t_start)
+    #print("load+kmeans",t_end-t_start)
     t_start = time.time()
 
 
@@ -235,7 +235,7 @@ def callback(data, list):
 
 
     t_end = time.time()
-    print("loop",t_end-t_start)
+    #print("loop",t_end-t_start)
     t_start = time.time()
     left_segment = np.asarray(left_segment)
     #print("left_segment", left_segment.shape)
@@ -279,10 +279,10 @@ def callback(data, list):
     msg.n2_x = current_state_ekf_l[0]
     msg.n2_y = current_state_ekf_l[1]
     t_end = time.time()
-    print("rest",t_end-t_start)
+    #print("rest",t_end-t_start)
     # msg.n2_z = current_state_ekf_l[2]
     end_time = time.time()
-    print("time_all",end_time-start_time)
+    #print("time_all",end_time-start_time)
     publisher_plane.publish(msg)
     rate.sleep()
 
@@ -297,7 +297,7 @@ def listener():
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
     rospy.Subscriber("output", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
-    rospy.Subscriber("/uuv00/mavros/imu/data", Imu, callback_imu,
+    rospy.Subscriber("uuv00/mavros/imu/data", Imu, callback_imu,
                      [ekf_l, ekf_r], queue_size=1)
     rospy.spin()
 
