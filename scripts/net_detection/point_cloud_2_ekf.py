@@ -249,9 +249,9 @@ def callback(data, list):
     A[:, 0] = left_segment[:, 0, 0]
     B = left_segment[:, 2]
     if A.shape[0] > 1:
-        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-        #m_b = np.linalg.lstsq(A,B)
-        #m_b = m_b[0]
+        # m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        m_b = np.linalg.lstsq(A,B)
+        m_b = m_b[0]
         ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
@@ -259,9 +259,9 @@ def callback(data, list):
     A[:, 0] = right_segment[:, 0, 0]
     B = right_segment[:, 2]
     if A.shape[0] > 1:
-        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-        #m_b = np.linalg.lstsq(A,B)
-        #m_b = m_b[0]
+        #m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        m_b = np.linalg.lstsq(A,B)
+        m_b = m_b[0]
         ekf_r.update(m_b)
     current_state_ekf_r = ekf_r.get_x_est()
     #print("current_state_ekf_r",current_state_ekf_r)
