@@ -81,7 +81,11 @@ class PathPlanning(object):
         pitch_gain = 1
         pitch = - pitch_gain * np.arctan((self.depth_des-self.depth) / np.sqrt(stammfunktion ** 2 + x_max ** 2))
 
-        ableitung = 3.0 * a_cubic * (x_max / 2.0) ** 2 + 2.0 * b_cubic * (x_max / 2.0) + c_cubic
+        ableitung = a_cubic * (x_max/2.0) ** 3 + b_cubic * (x_max/2.0) ** 2 + c_cubic * x_max/2.0 + d_cubic
+        #print("first",- 0.5 * np.arctan(ableitung))
+
+        #ableitung = 3.0 * a_cubic * (x_max / 2.0) ** 2 + 2.0 * b_cubic * (x_max / 2.0) + c_cubic
+        #print("second",- 0.5 * np.arctan(ableitung))
         yaw = - 0.5 * np.arctan(ableitung)
         # pitch = np.pi / 4
         # print("pitch:", pitch * 180 / np.pi)
