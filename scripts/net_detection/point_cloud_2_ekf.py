@@ -177,9 +177,7 @@ def callback(data, list):
     A = points#[label.ravel() == best_match]
 
     A = A[::2, :]
-    t_end = time.time()
-    print("load+kmeans",t_end-t_start)
-    t_start = time.time()
+
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
     # print("center", center[best_match, :])
@@ -195,7 +193,9 @@ def callback(data, list):
     right_segment = []
 
 
-
+    t_end = time.time()
+    print("load+kmeans",t_end-t_start)
+    t_start = time.time()
 
 
 
