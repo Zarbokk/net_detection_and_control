@@ -11,7 +11,7 @@ from net_detection_and_control.msg import ekf_data
 class PathPlanning(object):
     def __init__(self):
         self.depth_des = 0.7
-        self.distance_to_net = 0.7
+        self.distance_to_net = 1.3
         # distance_to_net_des = 1.5
         self.depth = 0
         # distance_to_net = 0
@@ -94,7 +94,7 @@ class PathPlanning(object):
             axis=[0, 0, 1], angle=-(yaw - np.pi / 2)) * Quaternion(axis=[0, 1, 0], angle=-pitch) * Quaternion(
             axis=[1, 0, 0], angle=roll)
 
-        thrust = 0.2
+        thrust = 0.1
         send_waypoint = AttitudeTarget()
         send_waypoint.type_mask = 0
         send_waypoint.orientation.x = qz_90n.x
