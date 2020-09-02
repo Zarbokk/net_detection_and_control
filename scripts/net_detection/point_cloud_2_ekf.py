@@ -148,6 +148,7 @@ def callback_imu(msg, tmp_list):
 
 
 def callback(data, list):
+    t = time.time()
     pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
     start_time = time.time()
     pc = ros_numpy.numpify(data)
@@ -161,6 +162,8 @@ def callback(data, list):
     points = points[::3, :]
     # print("points.shape",points.shape)
     points = np.float32(points)
+    elapsed = time.time() - t
+    print("elapsed input_data",elapsed)
     #points = points[points[:, 1] < 5]
     #points = points[points[:, 1] > -5]
 
@@ -195,7 +198,7 @@ def callback(data, list):
 
 
 
-
+    t = time.time()
     for i in range(A.shape[0]):
         x = A[i, 0]
         y = A[i, 1]
@@ -230,6 +233,11 @@ def callback(data, list):
                 rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
                 current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
                 right_segment.append([current_point[0], current_point[1], current_point[2]])
+    elapsed = time.time() - t
+    print("elapsed loop",elapsed)
+
+
+    t = time.time()
     left_segment = np.asarray(left_segment)
     #print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
@@ -239,8 +247,9 @@ def callback(data, list):
     A[:, 0] = left_segment[:, 0, 0]
     B = left_segment[:, 2]
     if A.shape[0] > 1:
-        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-
+        #m_b1 = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        m_b=np.linalg.lstsq(A,B)
+        m_b=m_b[0]
         ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
@@ -248,7 +257,10 @@ def callback(data, list):
     A[:, 0] = right_segment[:, 0, 0]
     B = right_segment[:, 2]
     if A.shape[0] > 1:
-        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        #m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        m_b=np.linalg.lstsq(A,B)
+        # m_b=np.asarray([m,b])
+        m_b=m_b[0]
         ekf_r.update(m_b)
     current_state_ekf_r = ekf_r.get_x_est()
 
@@ -270,9 +282,10 @@ def callback(data, list):
     msg.n2_y = current_state_ekf_l[1]
     # msg.n2_z = current_state_ekf_l[2]
     publisher_plane.publish(msg)
+    elapsed_time = time.time() - t
+    print("time duration",elapsed_time)
     elapsed_time = time.time() - start_time
-    #print("time duration",elapsed_time)
-
+    print("time duration complete",elapsed_time)
     rate.sleep()
 
 
@@ -282,7 +295,7 @@ def listener():
     ekf_l = ekf_class.ExtendedKalmanFilter()
     ekf_r = ekf_class.ExtendedKalmanFilter()
     pub_cloud = rospy.Publisher("point_cloud2", PointCloud2, queue_size=1)
-    publisher_marker = rospy.Publisher('detection_net_plane', MarkerArray, queue_size=1)
+    publisher_marker = rospy.Publisher('detection_net_plane2', MarkerArray, queue_size=1)
     publisher_plane = rospy.Publisher('plane_to_drive_by', ekf_data, queue_size=1)
     rospy.Subscriber("output", PointCloud2, callback,
                      [pub_cloud, ekf_l, ekf_r, publisher_marker, rate, publisher_plane], queue_size=1,buff_size=65536*2)
