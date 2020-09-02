@@ -255,7 +255,7 @@ def callback(data, list):
         m_b = m_b[0]
         ekf_r.update(m_b)
     current_state_ekf_r = ekf_r.get_x_est()
-    print("current_state_ekf_r",current_state_ekf_r)
+    #print("current_state_ekf_r",current_state_ekf_r)
     rviz = True
     if rviz:
         printing_to_rviz(left_segment, right_segment, current_state_ekf_r, current_state_ekf_l, pub, publisher_marker)
