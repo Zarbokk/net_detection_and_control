@@ -213,27 +213,27 @@ def callback(data, list):
             #alpha_y = 0/180*np.pi
             if np.arctan2(z, x) > current_mean_angle:
                 current_point=np.asarray([[x],[y],[z]])*1.3
-                rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
-                if current_point[1]>0:
-                    alpha_x=alpha_x*-1
-                if current_point[0]>0:
-                    alpha_y=alpha_y*-1
-                rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
-                rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
-                rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
-                current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+                # rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+                # if current_point[1]>0:
+                #     alpha_x=alpha_x*-1
+                # if current_point[0]>0:
+                #     alpha_y=alpha_y*-1
+                # rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+                # rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+                # rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+                # current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
                 left_segment.append([current_point[0], current_point[1], current_point[2]])
             else:
                 current_point=np.asarray([[x],[y],[z]])*1.3
-                rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
-                if current_point[1]>0:
-                    alpha_x=alpha_x*-1
-                if current_point[0]>0:
-                    alpha_y=alpha_y*-1
-                rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
-                rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
-                rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
-                current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+                # rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+                # if current_point[1]>0:
+                #     alpha_x=alpha_x*-1
+                # if current_point[0]>0:
+                #     alpha_y=alpha_y*-1
+                # rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+                # rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+                # rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+                # current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
                 right_segment.append([current_point[0], current_point[1], current_point[2]])
 
 
