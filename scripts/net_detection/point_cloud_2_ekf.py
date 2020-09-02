@@ -186,43 +186,70 @@ def callback(data, list):
     # print("current_mean_angle", current_mean_angle)
     left_segment = []
     right_segment = []
+
+
+
+
+
+
+
+
+
+
     for i in range(A.shape[0]):
         x = A[i, 0]
         y = A[i, 1]
         z = A[i, 2]
+
         if np.linalg.norm([x-median_center[0],y-median_center[1],z-median_center[2]])<1:
+            alpha_x = -5.0/180.0*np.pi
+            alpha_y= 8.0/180.0*np.pi
+            #alpha_x = 0/180*np.pi
+            #alpha_y = 0/180*np.pi
             if np.arctan2(z, x) > current_mean_angle:
-                left_segment.append([x, y, z])
+                current_point=np.asarray([[x],[y],[z]])*1.3
+                rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+                if current_point[1]>0:
+                    alpha_x=alpha_x*-1
+                if current_point[0]>0:
+                    alpha_y=alpha_y*-1
+                rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+                rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+                rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+                current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+                left_segment.append([current_point[0], current_point[1], current_point[2]])
             else:
-                right_segment.append([x, y, z])
+                current_point=np.asarray([[x],[y],[z]])*1.3
+                rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
+                if current_point[1]>0:
+                    alpha_x=alpha_x*-1
+                if current_point[0]>0:
+                    alpha_y=alpha_y*-1
+                rotation_matrix_x = np.asarray([[1,0,0],[ 0,np.cos(alpha_x), -np.sin(alpha_x)],[0, np.sin(alpha_x), np.cos(alpha_x)]])
+                rotation_matrix_y =np.asarray([[np.cos(alpha_y),0,np.sin(alpha_y)],[ 0,1, 0],[-np.sin(alpha_y), 0, np.cos(alpha_y)]])
+                rotation=np.matmul(rotation_matrix_y,rotation_matrix_x)
+                current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
+                right_segment.append([current_point[0], current_point[1], current_point[2]])
     left_segment = np.asarray(left_segment)
     #print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
     #print("right_segment", right_segment.shape)
 
     A = np.ones((left_segment.shape[0], 2))
-    A[:, 0] = left_segment[:, 0]
+    A[:, 0] = left_segment[:, 0, 0]
     B = left_segment[:, 2]
+    if A.shape[0] > 1:
+        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
 
-    # print("A", A.shape)
-    # print("B", B.shape)
-    # print("inverse:", np.linalg.inv(np.matmul(np.transpose(A), A)))
-    m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-    # update EKF
-    #ekf_l.prediction()
-    # print("m_b", m_b)
-    ekf_l.update(m_b)
+        ekf_l.update(m_b)
     current_state_ekf_l = ekf_l.get_x_est()
 
     A = np.ones((right_segment.shape[0], 2))
-    A[:, 0] = right_segment[:, 0]
+    A[:, 0] = right_segment[:, 0, 0]
     B = right_segment[:, 2]
-
-    m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
-    #ekf_r.prediction()
-
-    # print("EKF Update:")
-    ekf_r.update(m_b)
+    if A.shape[0] > 1:
+        m_b = np.matmul(np.matmul(np.linalg.inv(np.matmul(np.transpose(A), A)), np.transpose(A)), B)
+        ekf_r.update(m_b)
     current_state_ekf_r = ekf_r.get_x_est()
 
     rviz = True

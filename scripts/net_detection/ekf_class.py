@@ -23,7 +23,7 @@ class ExtendedKalmanFilter(object):
 
         # measurement noise
         # --> see measurement_covariance_model
-        self.__sig_r = 2.0
+        self.__sig_r = 1.0
         self.__r_mat = np.array(np.diag([self.__sig_r ** 2,
                                          self.__sig_r ** 2]))
 

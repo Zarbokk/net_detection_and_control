@@ -42,8 +42,8 @@ for i=1:3
         current_cloud(j,1:3)=current_cloud(j,1:3)*1.3;
         rotation_point=[0 0 norm(current_cloud(j,1:3))]';
 
-        alpha_x = 5/180*pi;
-        if current_cloud(j,1)>0
+        alpha_x = -5/180*pi;
+        if current_cloud(j,2)>0
             alpha_x=alpha_x*-1;
         end
         alpha_y=8/180*pi;

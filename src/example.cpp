@@ -63,8 +63,8 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     // Convert to ROS data type
 
     pcl::CropBox<pcl::PointXYZRGBA> boxFilter;
-    boxFilter.setMin(Eigen::Vector4f(-1, -0.3, 0, 1.0));
-    boxFilter.setMax(Eigen::Vector4f(1, 0.30, 4, 1.0));
+    boxFilter.setMin(Eigen::Vector4f(-2, -0.3, 0, 1.0));
+    boxFilter.setMax(Eigen::Vector4f(2, 0.30, 4, 1.0));
     boxFilter.setInputCloud(transformed_cloud);
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_box_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
@@ -73,7 +73,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
     pcl::StatisticalOutlierRemoval<pcl::PointXYZRGBA> sor;
     sor.setInputCloud (cloud_box_filtered);
-    sor.setMeanK (50);
+    sor.setMeanK (10);
     sor.setStddevMulThresh (0.5);
 
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr statistical_ouitlier_filtered (new pcl::PointCloud<pcl::PointXYZRGBA>);
