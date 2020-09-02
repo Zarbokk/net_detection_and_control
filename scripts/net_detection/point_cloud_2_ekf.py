@@ -273,6 +273,8 @@ def callback(data, list):
     msg.n2_x = current_state_ekf_l[0]
     msg.n2_y = current_state_ekf_l[1]
     # msg.n2_z = current_state_ekf_l[2]
+    end_time = time.time()
+    print("time_all",end_time-start_time)
     publisher_plane.publish(msg)
     rate.sleep()
 
