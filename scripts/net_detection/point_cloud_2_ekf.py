@@ -150,6 +150,11 @@ def callback_imu(msg, tmp_list):
 def callback(data, list):
     pub, ekf_l, ekf_r, publisher_marker, rate, publisher_plane = list
     start_time = time.time()
+
+
+
+    t_start = time.time()
+
     pc = ros_numpy.numpify(data)
 
     points = np.zeros((pc.shape[0], 3))
@@ -172,7 +177,9 @@ def callback(data, list):
     A = points#[label.ravel() == best_match]
 
     A = A[::2, :]
-
+    t_end = time.time()
+    print("load+kmeans",t_end-t_start)
+    t_start = time.time()
     # CALCULATE THE DIFFERENT SIDES      LEFT AND RIGHT
 
     # print("center", center[best_match, :])
@@ -230,7 +237,9 @@ def callback(data, list):
                 right_segment.append([current_point[0], current_point[1], current_point[2]])
 
 
-    t = time.time()
+    t_end = time.time()
+    print("loop",t_end-t_start)
+    t_start = time.time()
     left_segment = np.asarray(left_segment)
     #print("left_segment", left_segment.shape)
     right_segment = np.asarray(right_segment)
@@ -272,6 +281,8 @@ def callback(data, list):
     # msg.d2 = current_state_ekf_l[3]
     msg.n2_x = current_state_ekf_l[0]
     msg.n2_y = current_state_ekf_l[1]
+    t_end = time.time()
+    print("rest",t_end-t_start)
     # msg.n2_z = current_state_ekf_l[2]
     end_time = time.time()
     print("time_all",end_time-start_time)
