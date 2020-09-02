@@ -65,7 +65,7 @@ class PathPlanning(object):
         r_v_2 = self.normalize_vector(r_v_2)
         r_v_1 = self.normalize_vector(r_v_1)
         #print("r_v_1", r_v_1)
-        point_one = s_v + 1 * r_v_1 + self.distance_to_net * self.normalize_vector(
+        point_one = s_v + 2 * r_v_1 + self.distance_to_net * self.normalize_vector(
             np.cross(r_v_2, r_v_1))  # in 1 meter distance and 1.5 meter distance to net
         #print("point_one", point_one)
         z_max = point_one[0, 2]
