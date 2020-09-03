@@ -141,7 +141,7 @@ def callback_imu(msg, tmp_list):
 
     x_rot_vel = msg.angular_velocity.x
     y_rot_vel = msg.angular_velocity.y
-    z_rot_vel = msg.angular_velocity.z
+    z_rot_vel = -msg.angular_velocity.z# minus because of rotation is reserved in IMU data.
     ekf_l.prediction(z_rot_vel)
     ekf_r.prediction(z_rot_vel)
 
