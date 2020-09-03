@@ -99,6 +99,7 @@ class ExtendedKalmanFilter(object):
 
     def update(self, measurements):  # z_meas, x_pos, y_pos):
         """ innovation """
+        self.__p_mat=self.__p_mat+self.__q_mat
         number_of_measurements = measurements.shape[0]
         # iterate through all tx-rss-values
         # for itx in range(self.__tx_num):
