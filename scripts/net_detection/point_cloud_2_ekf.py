@@ -205,8 +205,8 @@ def callback(data, list):
         y = A[i, 1]
         z = A[i, 2]
         alpha_x = -5.0/180.0*np.pi
-        alpha_y= 25.0/180.0*np.pi
-        alpha_x = 0.0/180.0*np.pi
+        alpha_y= 8.0/180.0*np.pi
+        #alpha_x = 0.0/180.0*np.pi
         #alpha_y = 0.0/180.0*np.pi
         if np.arctan2(z, x) > current_mean_angle:
             current_point=np.asarray([[x],[y],[z]])*1.2
