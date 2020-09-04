@@ -209,7 +209,7 @@ def callback(data, list):
         #alpha_x = 0.0/180.0*np.pi
         #alpha_y = 0.0/180.0*np.pi
         if np.arctan2(z, x) > current_mean_angle:
-            current_point=np.asarray([[x],[y],[z]])*1.2
+            current_point=np.asarray([[x],[y],[z]])*1.3
             rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
             if current_point[1]>0:
                 alpha_x=alpha_x*-1
@@ -221,7 +221,7 @@ def callback(data, list):
             current_point=(np.matmul(rotation,(current_point-rotation_point))+rotation_point)
             left_segment.append([current_point[0], current_point[1], current_point[2]])
         else:
-            current_point=np.asarray([[x],[y],[z]])*1.2
+            current_point=np.asarray([[x],[y],[z]])*1.3
             rotation_point=np.asarray([[0],[0],[np.linalg.norm(current_point)]])
             if current_point[1]>0:
                 alpha_x=alpha_x*-1
