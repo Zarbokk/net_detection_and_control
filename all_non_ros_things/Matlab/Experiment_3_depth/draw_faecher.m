@@ -107,35 +107,10 @@ end
 %axis equal
 
 %%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(2,1) &  pose_boat_complete(:,6)<time_stamps(2,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(3,1) &  pose_boat_complete(:,6)<time_stamps(3,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(4,1) &  pose_boat_complete(:,6)<time_stamps(4,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(5,1) &  pose_boat_complete(:,6)<time_stamps(5,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(6,1) &  pose_boat_complete(:,6)<time_stamps(6,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(7,1) &  pose_boat_complete(:,6)<time_stamps(7,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-%poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(8,1) &  pose_boat_complete(:,6)<time_stamps(8,2),:);
-%plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(9,1) &  pose_boat_complete(:,6)<time_stamps(9,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(10,1) &  pose_boat_complete(:,6)<time_stamps(10,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
-%%
-poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(11,1) &  pose_boat_complete(:,6)<time_stamps(11,2),:);
-plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
+for i = 2:30
+    poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(i,1) &  pose_boat_complete(:,6)<time_stamps(i,2),:);
+    plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
+end
 %%
 %poses_to_keep = pose_boat_complete(pose_boat_complete(:,6)>time_stamps(12,1) &  pose_boat_complete(:,6)<time_stamps(12,2),:);
 %plot(poses_to_keep(:,2),poses_to_keep(:,1),".")
