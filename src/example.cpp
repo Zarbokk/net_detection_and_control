@@ -96,7 +96,7 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 //    ec.extract (cluster_indices);
 //
 //    std::cout << "No of clusters formed are " << cluster_indices.size () << std::endl;
-//    pcl::toPCLPointCloud2 (*statistical_ouitlier_filtered, *cloud_transformed);
+    pcl::toPCLPointCloud2 (*statistical_ouitlier_filtered, *cloud_transformed);
 
 
     pcl::PCLPointCloud2ConstPtr cloudPtr(cloud_transformed);
