@@ -81,23 +81,24 @@ cloud_cb (const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
 
 
-    pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBA>);
-    tree->setInputCloud (statistical_ouitlier_filtered);
+//    pcl::search::KdTree<pcl::PointXYZRGBA>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBA>);
+//    tree->setInputCloud (statistical_ouitlier_filtered);
 
 
-    pcl::EuclideanClusterExtraction<pcl::PointXYZRGBA> ec;
-    std::vector<pcl::PointIndices> cluster_indices;
+//    pcl::EuclideanClusterExtraction<pcl::PointXYZRGBA> ec;
+//    std::vector<pcl::PointIndices> cluster_indices;
+//
+//    ec.setClusterTolerance (0.05); // 15cm
+//    ec.setMinClusterSize (100);
+//    ec.setMaxClusterSize (25000);
+//    ec.setSearchMethod (tree);
+//    ec.setInputCloud (statistical_ouitlier_filtered);
+//    ec.extract (cluster_indices);
+//
+//    std::cout << "No of clusters formed are " << cluster_indices.size () << std::endl;
+//    pcl::toPCLPointCloud2 (*statistical_ouitlier_filtered, *cloud_transformed);
 
-    ec.setClusterTolerance (0.15); // 15cm
-    ec.setMinClusterSize (100);
-    ec.setMaxClusterSize (25000);
-    ec.setSearchMethod (tree);
-    ec.setInputCloud (statistical_ouitlier_filtered);
-    ec.extract (cluster_indices);
 
-
-
-    pcl::toPCLPointCloud2 (*statistical_ouitlier_filtered, *cloud_transformed);
     pcl::PCLPointCloud2ConstPtr cloudPtr(cloud_transformed);
     sensor_msgs::PointCloud2 output;
 
