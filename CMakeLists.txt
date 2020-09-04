@@ -15,7 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   pcl_conversions
 )
-
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -155,7 +154,7 @@ add_executable(example src/example.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(example ${catkin_LIBRARIES} -lpcl_filters )
+target_link_libraries(example ${catkin_LIBRARIES} -lpcl_filters -lpcl_search -lpcl_segmentation)
 #############
 ## Install ##
 #############
