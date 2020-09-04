@@ -45,6 +45,7 @@ def callback_pointcloud(data):
     points[:, 2] = pc['z'].flatten()
     points = np.float32(points)
     current_time = rospy.get_time()
+    print(rospy.get_time())
     for i in range(points.shape[0]):
         x = points[i, 0]
         y = points[i, 1]
